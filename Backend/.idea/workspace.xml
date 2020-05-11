@@ -68,7 +68,7 @@
       <workItem from="1588919824550" duration="5329000" />
       <workItem from="1589005952046" duration="13616000" />
       <workItem from="1589073823550" duration="20881000" />
-      <workItem from="1589182702826" duration="4591000" />
+      <workItem from="1589182702826" duration="4850000" />
     </task>
     <servers />
   </component>
@@ -80,6 +80,10 @@
       <screen x="0" y="23" width="1920" height="1057" />
     </state>
     <state x="651" y="136" key="#PHP/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1588669219051" />
+    <state x="725" y="361" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1589211062523">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="725" y="361" key="#com.intellij.fileTypes.FileTypeChooser/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1589211062523" />
     <state x="770" y="243" key="#com.intellij.ide.util.MemberChooser" timestamp="1588491882176">
       <screen x="0" y="23" width="1920" height="1057" />
     </state>
