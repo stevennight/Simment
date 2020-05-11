@@ -1,0 +1,13 @@
+{
+    "autoload": {
+        "psr-4": {
+            "controller\\": "controller/",
+            "helper\\": "helper/",
+            "Gregwar\\": "helper/gregwar/captcha/src/Gregwar"
+        }
+    },
+    "require": {
+        "mongodb/mongodb": "^1.6",
+        "desarrolla2/cache": "^3.0"
+    }
+}

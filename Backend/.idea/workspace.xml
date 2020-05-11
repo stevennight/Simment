@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="dd31b8fe-8054-4c2d-80e2-5e621bbf23bc" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings" doNotAsk="true" synchronizationState="SYNCHRONIZE">
+    <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
+    <execution>
+      <executable />
+    </execution>
+  </component>
+  <component name="PhpWorkspaceProjectConfiguration">
+    <include_path>
+      <path value="$PROJECT_DIR$/vendor/composer" />
+      <path value="$PROJECT_DIR$/vendor/mongodb/mongodb" />
+      <path value="$PROJECT_DIR$/vendor/symfony/finder" />
+      <path value="$PROJECT_DIR$/vendor/psr/simple-cache" />
+      <path value="$PROJECT_DIR$/vendor/webmozart/path-util" />
+      <path value="$PROJECT_DIR$/vendor/webmozart/glob" />
+      <path value="$PROJECT_DIR$/vendor/webmozart/assert" />
+      <path value="$PROJECT_DIR$/vendor/gregwar/captcha" />
+      <path value="$PROJECT_DIR$/vendor/desarrolla2/cache" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-ctype" />
+    </include_path>
+  </component>
+  <component name="ProjectId" id="1bO1LkKCEtU2bkRvsuCvTB2DNxZ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/helper/gregwar/captcha/src/Gregwar/Captcha/Font" />
+    <property name="php.override.implement.member.chooser.php.doc" value="NONE" />
+    <property name="settings.editor.selected.configurable" value="reference.webide.settings.project.settings.php" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/public" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/helper/gregwar/captcha/src/Gregwar/Captcha/Font" />
+      <recent name="$PROJECT_DIR$/helper" />
+      <recent name="$PROJECT_DIR$/vendor/gregwar/captcha/src/Gregwar/Captcha/Font" />
+    </key>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="dd31b8fe-8054-4c2d-80e2-5e621bbf23bc" name="Default Changelist" comment="" />
+      <created>1588488271866</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1588488271866</updated>
+      <workItem from="1588488273403" duration="23523000" />
+      <workItem from="1588556684629" duration="7895000" />
+      <workItem from="1588639089543" duration="18047000" />
+      <workItem from="1588739960264" duration="7943000" />
+      <workItem from="1588919824550" duration="5329000" />
+      <workItem from="1589005952046" duration="13616000" />
+      <workItem from="1589073823550" duration="20881000" />
+      <workItem from="1589182702826" duration="4591000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="651" y="136" key="#PHP" timestamp="1588669219051">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="651" y="136" key="#PHP/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1588669219051" />
+    <state x="770" y="243" key="#com.intellij.ide.util.MemberChooser" timestamp="1588491882176">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="770" y="243" key="#com.intellij.ide.util.MemberChooser/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1588491882176" />
+    <state x="698" y="305" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1588495938904">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="698" y="305" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1588495938904" />
+    <state x="698" y="313" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog" timestamp="1589015561659">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="698" y="313" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1588667299556" />
+    <state x="698" y="313" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog/0.23.1920.1057@0.23.1920.1057" timestamp="1589015561659" />
+    <state x="694" y="375" key="NewPhpClassDialog" timestamp="1589126650823">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="694" y="375" key="NewPhpClassDialog/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1589126650823" />
+    <state x="694" y="375" key="NewPhpClassDialog/0.23.1920.1057@0.23.1920.1057" timestamp="1589014991551" />
+    <state x="784" y="482" key="NewPhpFileDialog" timestamp="1589126659341">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="784" y="482" key="NewPhpFileDialog/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1589126659341" />
+    <state x="469" y="190" key="SettingsEditor" timestamp="1588492868934">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="469" y="190" key="SettingsEditor/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1588492868934" />
+    <state x="653" y="384" key="com.intellij.ide.util.TipDialog" timestamp="1589183057626">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="653" y="384" key="com.intellij.ide.util.TipDialog/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1589183057626" />
+    <state x="653" y="384" key="com.intellij.ide.util.TipDialog/0.23.1920.1057@0.23.1920.1057" timestamp="1589006164387" />
+    <state x="625" y="258" width="670" height="676" key="search.everywhere.popup" timestamp="1589124439815">
+      <screen x="0" y="23" width="1920" height="1057" />
+    </state>
+    <state x="625" y="258" width="670" height="676" key="search.everywhere.popup/0.23.1920.1057/1920.23.1366.745@0.23.1920.1057" timestamp="1589124439815" />
+    <state x="625" y="258" width="670" height="676" key="search.everywhere.popup/0.23.1920.1057@0.23.1920.1057" timestamp="1589016869647" />
+  </component>
+</project>
