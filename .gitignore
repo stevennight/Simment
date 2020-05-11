@@ -1,4 +1,4 @@
-node_modules
-vendor
+node_modules/
+vendor/
 /Backend/runtime/cache/*
-.idea
+.idea/
