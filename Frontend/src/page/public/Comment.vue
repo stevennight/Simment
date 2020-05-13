@@ -18,6 +18,12 @@
                     </div>
                 </div>
                 <div style="clear: both"></div>
+                <div v-if="configReplyNotify" class="sendReplyNotifyWrapper">
+                    <label>
+                        <input type="checkbox" v-model="replyNotify">
+                        回复通知(请填写真实邮箱,否则无法收到通知）
+                    </label>
+                </div>
                 <div class="captchaWrapper">
                     <input class="sendCaptcha" type="text" v-model="captcha" placeholder="右侧验证码">
                     <img v-show="captchaImageShow" class="captchaImage" :src="captchaImage" @load="captchaLoaded" @click="refreshCaptcha">
@@ -54,13 +60,15 @@
                 comment: "",
                 username: "",
                 email: "",
+                replyNotify: false,
                 captcha: "",
                 page: 0,
                 commentData: {},
                 commentStack: [],
                 init: false, //判断是否刚加载页面
                 configRequiredUsername: false,
-                configRequiredEmail: false
+                configRequiredEmail: false,
+                configReplyNotify: false
             };
         },
         components: {
@@ -99,6 +107,7 @@
                         username: this.username,
                         email: this.email
                     },
+                    replyNotify: this.replyNotify,
                     captcha: this.captcha
                 };
                 if(this.replyComment && this.replyComment._id && this.replyComment._id['$oid']){
@@ -173,6 +182,8 @@
 
                         this.configRequiredUsername = data.config.requiredUsername;
                         this.configRequiredEmail = data.config.requiredEmail;
+                        this.configReplyNotify = data.config.replyNotify;
+                        if(this.configReplyNotify) this.replyNotify = true;
 
                         this.commentData = data;
                         if(!this.init && this.$route.query.comment !== undefined){
@@ -287,14 +298,15 @@
     .send
         width 100%
         input
-            width 100%
-            display block
             padding .5rem
             border-radius .3rem
             border .1rem solid #ddd
             box-sizing border-box
         .sendCommentWrapper
             margin-top .3rem
+            .sendComment
+                width 100%
+                display block
         .sendInfo
             width 100%
             margin .3rem 0
@@ -312,6 +324,11 @@
                 box-sizing border-box
                 .sendEmail
                     width 100%
+        .sendReplyNotifyWrapper
+            padding-top .3rem
+            label, input
+                cursor pointer
+                user-select none
         .sendBtnWrapper
             margin .3rem 0
             width 100%

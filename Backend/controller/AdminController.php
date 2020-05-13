@@ -59,6 +59,7 @@ class AdminController extends Controller
         $requiredUsername = @$params['requiredUsername'];
         $requiredEmail = @$params['requiredEmail'];
         $audit = @$params['audit'];
+        $replyNotify = @$params['replyNotify']; //回复通知
         $commentMaxLen = @$params['commentMaxLen'];
 
         if(!$site || !$subCommentMainCount || !$perPageCount || !$commentMaxLen || !$adminUsername){
@@ -102,6 +103,7 @@ class AdminController extends Controller
                 'requiredUsername' => $requiredUsername,
                 'requiredEmail' => $requiredEmail,
                 'audit' => $audit,
+                'replyNotify' => $replyNotify,
                 'commentMaxLen' => $commentMaxLen,
                 'subCommentMainCount' => $subCommentMainCount,
                 'adminUsername' => $adminUsername
@@ -118,6 +120,7 @@ class AdminController extends Controller
                     'requiredUsername' => $requiredUsername,
                     'requiredEmail' => $requiredEmail,
                     'audit' => $audit,
+                    'replyNotify' => $replyNotify,
                     'commentMaxLen' => $commentMaxLen,
                     'subCommentMainCount' => $subCommentMainCount,
                     'adminUsername' => $adminUsername
@@ -522,7 +525,7 @@ class AdminController extends Controller
         }
 
         //获取评论信息
-        $commentData = $this->db->comment->findOne(['_id' => $idObj ]);
+        $commentData = $this->db->comment->findOne(['_id' => $idObj]);
         if(!$commentData){
             $this->response([
                 'code' => -1,
@@ -530,6 +533,32 @@ class AdminController extends Controller
             ]);
             return;
         }
+        //获取上一级的评论
+        if($commentData['parentId']){
+            $parentCommentData = $this->db->comment->findOne(['_id' => $commentData['parentId']], ['projection' => [
+                'email' => 1, 'username' => 1, 'comment' => 1, 'replyNotify' => 1
+            ]]);
+        }
+
+        //获取文章（路径）
+        $articleData = $this->db->article->findOne(['_id' => $commentData['articleId']]);
+        if(!$articleData){
+            $this->response([
+                'code' => -1,
+                'msg' => '内部错误'
+            ]);
+            return;
+        }
+        //获取站点
+        $siteData = $this->db->site->findOne(['_id' => $articleData['siteId']]);
+        if(!$siteData){
+            $this->response([
+                'code' => -1,
+                'msg' => '内部错误'
+            ]);
+            return;
+        }
+        $replyNotify = $siteData['replyNotify'];
 
         $updateField = ['status' => $status];
         if($comment){
@@ -564,6 +593,11 @@ class AdminController extends Controller
             if($commentData['parentRoot']) $commentRootCount = 0;
         }
         DataHelper::updateCommentCount($this->db, $commentData['articleId'], $commentRootCount, $commentCount);
+
+        //邮件通知发送，通知回复评论的对象 （status audit->public时才通知）(需要站点允许replyNotify；被回复者设置了邮箱、允许replyNotify)
+        if($commentData['status'] === 'audit' && $status === 'public' && $replyNotify && !empty(@$parentCommentData['email']) && @$parentCommentData['replyNotify']){
+            $this->mailer->send($parentCommentData['email'], '有人回复了您的评论~',  "评论: \"${parentCommentData['comment']}\"，${commentData['username']} 回复道：\"${commentData['comment']}\"", 'html');
+        }
 
         $this->response([
             'code' => 0,

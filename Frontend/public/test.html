@@ -8,8 +8,6 @@
         width: 100%;
     }
     .nyatoriCommentWrapper0511 .send input {
-        width: 100%;
-        display: block;
         padding: 0.5rem;
         border-radius: 0.3rem;
         border: 0.1rem solid #ddd;
@@ -17,6 +15,10 @@
     }
     .nyatoriCommentWrapper0511 .send .sendCommentWrapper {
         margin-top: 0.3rem;
+    }
+    .nyatoriCommentWrapper0511 .send .sendCommentWrapper .sendComment {
+        width: 100%;
+        display: block;
     }
     .nyatoriCommentWrapper0511 .send .sendInfo {
         width: 100%;
@@ -39,6 +41,13 @@
     }
     .nyatoriCommentWrapper0511 .send .sendInfo .sendEmailWrapper .sendEmail {
         width: 100%;
+    }
+    .nyatoriCommentWrapper0511 .send .sendReplyNotifyWrapper {
+        padding-top: .3rem;
+    }
+    .nyatoriCommentWrapper0511 .send .sendReplyNotifyWrapper label, .nyatoriCommentWrapper0511 .send .sendReplyNotifyWrapper input {
+        cursor: pointer;
+        user-select: none;
     }
     .nyatoriCommentWrapper0511 .send .sendBtnWrapper {
         margin: 0.3rem 0;
@@ -299,6 +308,12 @@
                     </div>
                 </div>
                 <div style="clear: both"></div>
+                <div v-if="configReplyNotify" class="sendReplyNotifyWrapper">
+                    <label>
+                        <input type="checkbox" v-model="replyNotify">
+                        回复通知(请填写真实邮箱,否则无法收到通知）
+                    </label>
+                </div>
                 <div class="captchaWrapper">
                     <input class="sendCaptcha" type="text" v-model="captcha" placeholder="右侧验证码">
                     <img v-show="captchaImageShow" class="captchaImage" :src="captchaImage" @load="captchaLoaded" @click="refreshCaptcha">
@@ -377,6 +392,7 @@
             comment: "",
             username: "",
             email: "",
+            replyNotify: false,
             captcha: "",
             page: 0,
             commentData: {},
@@ -384,7 +400,8 @@
             pageList: [],
             init: false, //判断是否刚加载页面
             configRequiredUsername: false,
-            configRequiredEmail: false
+            configRequiredEmail: false,
+            configReplyNotify: false
         },
         computed: {
             commentClosed() {
@@ -466,6 +483,7 @@
                         username: this.username,
                         email: this.email
                     },
+                    replyNotify: this.replyNotify,
                     captcha: this.captcha
                 };
                 if(this.replyComment && this.replyComment._id && this.replyComment._id['$oid']){
@@ -473,10 +491,13 @@
                 }
                 $jquery.ajax({
                     method: 'POST',
-                    url: commentSystem + '/api.php?controller=comment&action=submit',
+                    url: commentSystem + '/api.php?controller=comment&action=submit&site=' + commentSite,
                     data: JSON.stringify(postData),
                     dataType: 'json',
-                    contentType: "application/json"
+                    contentType: "application/json",
+                    xhrFields: {
+                        withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
+                    },
                 })
                     .then((response) => {
                         const data = response;
@@ -520,6 +541,9 @@
                         page: (page - 1)
                     },
                     dataType: "json",
+                    xhrFields: {
+                        withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
+                    },
                 })
                     .then((response) => {
                         var data = response;
@@ -534,6 +558,8 @@
 
                         this.configRequiredUsername = data.config.requiredUsername;
                         this.configRequiredEmail = data.config.requiredEmail;
+                        this.configReplyNotify = data.config.replyNotify;
+                        if(this.configReplyNotify) this.replyNotify = true;
 
                         this.commentData = data;
                         this.init = true;
@@ -566,7 +592,10 @@
                         site: commentSite,
                         path: commentPath,
                     },
-                    dataType: 'json'
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
+                    },
                 })
                     .then((response) => {
                         const data = response;

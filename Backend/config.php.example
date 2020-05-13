@@ -21,5 +21,22 @@ $config = [
         'partCleanCount' => 5,  //缓存文件部分清理时尝试清理的次数
         'cron' => true  //使用cron，请在crontab中定时运行根目录的cron.php
     ],
+    'mail' => [
+        'type' => 'smtp',
+        'server' => 'smtp.example.com',
+        'port' => '465',
+        'username' => 'test',
+        'senderAlias' => 'test',
+        'password' => 'password',
+        'secure' => 'ssl',
+        'timeout' => 20,
+        'persistent' => false,
+        'context' => null
+//        'type' => 'ali',
+//        'server' => 'dm.aliyuncs.com', //dm.aliyuncs.com 华东, dm.ap-southeast-1.aliyuncs.com 新加坡, dm.ap-southeast-2.aliyuncs.com 悉尼
+//        'apikey' =>
+
+//        'type' => 'disable',    //全局关闭
+    ],
 ];
 !defined('CONFIG')?define('CONFIG', $config):null;

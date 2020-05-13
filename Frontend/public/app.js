@@ -10,8 +10,6 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
     "        width: 100%;\n" +
     "    }\n" +
     "    .nyatoriCommentWrapper0511 .send input {\n" +
-    "        width: 100%;\n" +
-    "        display: block;\n" +
     "        padding: 0.5rem;\n" +
     "        border-radius: 0.3rem;\n" +
     "        border: 0.1rem solid #ddd;\n" +
@@ -19,6 +17,10 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
     "    }\n" +
     "    .nyatoriCommentWrapper0511 .send .sendCommentWrapper {\n" +
     "        margin-top: 0.3rem;\n" +
+    "    }\n" +
+    "    .nyatoriCommentWrapper0511 .send .sendCommentWrapper .sendComment {\n" +
+    "        width: 100%;\n" +
+    "        display: block;\n" +
     "    }\n" +
     "    .nyatoriCommentWrapper0511 .send .sendInfo {\n" +
     "        width: 100%;\n" +
@@ -41,6 +43,13 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
     "    }\n" +
     "    .nyatoriCommentWrapper0511 .send .sendInfo .sendEmailWrapper .sendEmail {\n" +
     "        width: 100%;\n" +
+    "    }\n" +
+    "    .nyatoriCommentWrapper0511 .send .sendReplyNotifyWrapper {\n" +
+    "        padding-top: .3rem;\n" +
+    "    }\n" +
+    "    .nyatoriCommentWrapper0511 .send .sendReplyNotifyWrapper label, .nyatoriCommentWrapper0511 .send .sendReplyNotifyWrapper input {\n" +
+    "        cursor: pointer;\n" +
+    "        user-select: none;\n" +
     "    }\n" +
     "    .nyatoriCommentWrapper0511 .send .sendBtnWrapper {\n" +
     "        margin: 0.3rem 0;\n" +
@@ -301,6 +310,12 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
     "                    </div>\n" +
     "                </div>\n" +
     "                <div style=\"clear: both\"></div>\n" +
+    "                <div v-if=\"configReplyNotify\" class=\"sendReplyNotifyWrapper\">\n" +
+    "                    <label>\n" +
+    "                        <input type=\"checkbox\" v-model=\"replyNotify\">\n" +
+    "                        回复通知(请填写真实邮箱,否则无法收到通知）\n" +
+    "                    </label>\n" +
+    "                </div>" +
     "                <div class=\"captchaWrapper\">\n" +
     "                    <input class=\"sendCaptcha\" type=\"text\" v-model=\"captcha\" placeholder=\"右侧验证码\">\n" +
     "                    <img v-show=\"captchaImageShow\" class=\"captchaImage\" :src=\"captchaImage\" @load=\"captchaLoaded\" @click=\"refreshCaptcha\">\n" +
@@ -360,268 +375,282 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div v-if=\"!init\" class=\"nyatoriCommentWrapper0511Loading\">Loading</div>\n" +
-    "</div>\n";
+    "</div>";
     var nyatoriCommentWrapper0511JS = "<script src=\"https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js\"></script>\n" +
     "<script src=\"https://cdn.jsdelivr.net/npm/vue/dist/vue.js\"></script>\n" +
     "<script type=\"text/javascript\">\n" +
-    "    var commentEl = document.getElementById('nyatoriCommentWrapper0511');\n" +
-    "    var commentSystem = commentEl.getAttribute('data-system');\n" +
-    "    var commentSite = commentEl.getAttribute('data-site');\n" +
-    "    // var commentPath = commentEl.getAttribute('data-path');\n" +
-    "    var commentPath = GetUrlRelativePath();\n" +
-    "\n" +
-    "    var $jquery=$.noConflict();\n" +
-    "\n" +
-    "    var vm = new Vue({\n" +
-    "        el: '#commentApp',\n" +
-    "        data: {\n" +
-    "            captchaImage: commentSystem + \"/api.php?controller=public&action=captcha\",\n" +
-    "            captchaImageShow: false,\n" +
-    "            replyComment: null,\n" +
-    "            comment: \"\",\n" +
-    "            username: \"\",\n" +
-    "            email: \"\",\n" +
-    "            captcha: \"\",\n" +
-    "            page: 0,\n" +
-    "            commentData: {},\n" +
-    "            commentStack: [],\n" +
-    "            pageList: [],\n" +
-    "            init: false, //判断是否刚加载页面\n" +
-    "            configRequiredUsername: false,\n" +
-    "            configRequiredEmail: false\n" +
-    "        },\n" +
-    "        computed: {\n" +
-    "            commentClosed() {\n" +
-    "                const comment = this.commentData;\n" +
-    "                if(!comment.article) return false;\n" +
-    "                return !comment.article.commentSwitch;\n" +
-    "            },\n" +
-    "            commentList() {\n" +
-    "                if(!this.commentData) return [];\n" +
-    "                return this.commentData.comment;\n" +
-    "            },\n" +
-    "            commentCount(){\n" +
-    "                if(!this.commentData) return 0;\n" +
-    "                if(!this.commentData.article) return 0;\n" +
-    "                return this.commentData.article.commentCount;\n" +
-    "            },\n" +
-    "            pageCount(){\n" +
-    "                if(!this.commentData) return [];\n" +
-    "                if(!this.commentData.article) return [];\n" +
-    "                if(!this.commentData.config) return [];\n" +
-    "                const count = this.commentData.article.commentRootCount;    //使用顶级（根）评论的数量来计算页数，因为只显示一级的评论在列表上。\n" +
-    "                const perPageCount = this.commentData.config.perPageCount; //分页最大评论数\n" +
-    "                const pageTotal = Math.ceil(count / perPageCount);\n" +
-    "                const currentPage = this.commentData.page + 1;\n" +
-    "                if(pageTotal < 1){\n" +
-    "                    return [];  //一页时不显示页码\n" +
-    "                } else if(pageTotal < 8) {\n" +
-    "                    let pageList = [];\n" +
-    "                    for(let i = 1; i <= pageTotal; i++){\n" +
-    "                        pageList[i-1] = i;\n" +
-    "                    }\n" +
-    "                    return pageList;\n" +
-    "                } else {\n" +
-    "                    let pageList = [1, 2];\n" +
-    "                    const prePage = currentPage - 1;\n" +
-    "                    const nextPage = currentPage + 1;\n" +
-    "                    if(prePage > 2){\n" +
-    "                        pageList.push('...');\n" +
-    "                        pageList.push(prePage);\n" +
-    "                    }\n" +
-    "                    if(currentPage > 2 && currentPage < pageTotal-1){\n" +
-    "                        pageList.push(currentPage);\n" +
-    "                    }\n" +
-    "                    if(nextPage > 2 && nextPage < pageTotal-1){\n" +
-    "                        pageList.push(nextPage);\n" +
-    "                        pageList.push('...');\n" +
-    "                    }\n" +
-    "                    if(nextPage <= 2){\n" +
-    "                        pageList.push('...');\n" +
-    "                    }\n" +
-    "                    pageList.push(pageTotal - 1, pageTotal);\n" +
-    "                    return pageList;\n" +
-    "                }\n" +
-    "            }\n" +
-    "        },\n" +
-    "        methods: {\n" +
-    "            submit() {\n" +
-    "                if(this.captcha.trim().length < 1) {\n" +
-    "                    alert('请输入验证码');\n" +
-    "                    return false;\n" +
-    "                }\n" +
-    "                if(this.comment.length > 200) {\n" +
-    "                    alert('评论内容过长');\n" +
-    "                    return false;\n" +
-    "                }\n" +
-    "                if(this.comment.trim().length < 1){\n" +
-    "                    alert('请输入评论内容');\n" +
-    "                    return false;\n" +
-    "                }\n" +
-    "                if(this.email && !/^\\w+?@\\w+?\\.\\w+?$/g.test(this.email)){\n" +
-    "                    alert('输入邮箱有误');\n" +
-    "                    return false;\n" +
-    "                }\n" +
-    "                let postData = {\n" +
-    "                    site: commentSite,\n" +
-    "                    path: commentPath,\n" +
-    "                    comment: {\n" +
-    "                        comment: this.comment,\n" +
-    "                        username: this.username,\n" +
-    "                        email: this.email\n" +
-    "                    },\n" +
-    "                    captcha: this.captcha\n" +
-    "                };\n" +
-    "                if(this.replyComment && this.replyComment._id && this.replyComment._id['$oid']){\n" +
-    "                    postData.comment.parentId = this.replyComment._id['$oid'];\n" +
-    "                }\n" +
-    "                $jquery.ajax({\n" +
-    "                    method: 'POST',\n" +
-    "                    url: commentSystem + '/api.php?controller=comment&action=submit',\n" +
-    "                    data: JSON.stringify(postData),\n" +
-    "                    dataType: 'json',\n" +
-    "                    contentType: \"application/json\"\n" +
-    "                })\n" +
-    "                    .then((response) => {\n" +
-    "                        const data = response;\n" +
-    "                        if(data.code === undefined){\n" +
-    "                            alert('解析失败');\n" +
-    "                            return;\n" +
-    "                        }\n" +
-    "                        this.refreshCaptcha();\n" +
-    "                        if(data.code !== 0){\n" +
-    "                            alert(data.msg);\n" +
-    "                            return;\n" +
-    "                        }\n" +
-    "\n" +
-    "                        this.commentData.comment.unshift({\n" +
-    "                            _id: {'$oid': (new Date()).getTime()},\n" +
-    "                            comment: this.comment,\n" +
-    "                            username: '我',\n" +
-    "                            date: data.isPublic?'刚刚':'审核后显示',\n" +
-    "                            isNew: true,\n" +
-    "                            status: 'public'\n" +
-    "                        });\n" +
-    "\n" +
-    "                        this.comment = this.username = this.email = this.captcha = \"\";\n" +
-    "                        this.replyComment = null;\n" +
-    "                        alert(data.msg);\n" +
-    "                        // this.getList();\n" +
-    "                    })\n" +
-    "                    .catch(function (error) {\n" +
-    "                        console.log(error);\n" +
-    "                    });\n" +
-    "            },\n" +
-    "            getList(page = 1) {\n" +
-    "                $jquery.ajax({\n" +
-    "                    method: 'get',\n" +
-    "                    url: commentSystem + \"/api.php\",\n" +
-    "                    data: {\n" +
-    "                        controller: 'comment',\n" +
-    "                        action: 'list',\n" +
-    "                        site: commentSite,\n" +
-    "                        path: commentPath,\n" +
-    "                        page: (page - 1)\n" +
-    "                    },\n" +
-    "                    dataType: \"json\",\n" +
-    "                })\n" +
-    "                    .then((response) => {\n" +
-    "                        var data = response;\n" +
-    "                        if(data.code === undefined){\n" +
-    "                            alert('解析失败');\n" +
-    "                            return;\n" +
-    "                        }\n" +
-    "                        if(data.code !== 0){\n" +
-    "                            alert(data.msg);\n" +
-    "                            return;\n" +
-    "                        }\n" +
-    "\n" +
-    "                        this.configRequiredUsername = data.config.requiredUsername;\n" +
-    "                        this.configRequiredEmail = data.config.requiredEmail;\n" +
-    "\n" +
-    "                        this.commentData = data;\n" +
-    "                        this.init = true;\n" +
-    "                    })\n" +
-    "                    .catch(function(error){\n" +
-    "                        console.log(error);\n" +
-    "                    });\n" +
-    "            },\n" +
-    "            refreshCaptcha(){\n" +
-    "                this.captchaImage = commentSystem + \"/api.php?controller=public&action=captcha&token=\"+Math.random();\n" +
-    "                this.captchaImageShow = false;\n" +
-    "            },\n" +
-    "            captchaLoaded(){\n" +
-    "                this.captchaImageShow = true;\n" +
-    "            },\n" +
-    "            replyClick(comment){\n" +
-    "                this.replyComment = comment;\n" +
-    "                console.log(comment);\n" +
-    "            },\n" +
-    "            closeReply(){\n" +
-    "                this.replyComment = null;\n" +
-    "            },\n" +
-    "            getOneComment(comment){\n" +
-    "                $jquery.ajax({\n" +
-    "                    url: commentSystem + \"/api.php\",\n" +
-    "                    data: {\n" +
-    "                        controller: 'comment',\n" +
-    "                        action: 'listone',\n" +
-    "                        id: comment._id['$oid'],\n" +
-    "                        site: commentSite,\n" +
-    "                        path: commentPath,\n" +
-    "                    },\n" +
-    "                    dataType: 'json'\n" +
-    "                })\n" +
-    "                    .then((response) => {\n" +
-    "                        const data = response;\n" +
-    "                        if(data.code === undefined){\n" +
-    "                            alert('解析失败');\n" +
-    "                            return;\n" +
-    "                        }\n" +
-    "                        if(data.code !== 0){\n" +
-    "                            alert(data.msg);\n" +
-    "                            return;\n" +
-    "                        }\n" +
-    "\n" +
-    "                        this.commentStack.push(this.commentData);\n" +
-    "                        this.commentData = data;\n" +
-    "                    })\n" +
-    "                    .catch(function(error){\n" +
-    "                        console.log(error);\n" +
-    "                    });\n" +
-    "            },\n" +
-    "            commentHistoryBack() {\n" +
-    "                const commentList = this.commentStack.pop();\n" +
-    "                if(!commentList) return;\n" +
-    "                this.commentData = commentList;\n" +
-    "            },\n" +
-    "            pageChange(page){\n" +
-    "                if(page === '...') return;\n" +
-    "                this.getList(page);\n" +
-    "            }\n" +
-    "        },\n" +
-    "        mounted() {\n" +
-    "            this.$el.style.display = 'block';   //避免闪现上面vue代码的未解析的文本。\n" +
-    "            this.getList();\n" +
-    "        }\n" +
-    "    }); //会去除锚点，如果使用vue router等类似单页应用可能会出现问题。\n" +
-    "\n" +
-    "    function GetUrlRelativePath()\n" +
-    "    {\n" +
-    "        var url = document.location.toString();\n" +
-    "        var arrUrl = url.split(\"//\");\n" +
-    "\n" +
-    "        var start = arrUrl[1].indexOf(\"/\");\n" +
-    "        var relUrl = arrUrl[1].substring(start);//stop省略，截取从start开始到结尾的所有字符\n" +
-    "\n" +
-    "        if(relUrl.indexOf(\"#\") != -1){  //去除锚点\n" +
-    "            relUrl = relUrl.split(\"#\")[0];\n" +
-    "        }\n" +
-    "        if(relUrl.indexOf(\"?\") != -1){\n" +
-    "            relUrl = relUrl.split(\"?\")[0];\n" +
-    "        }\n" +
-    "        return relUrl;\n" +
-    "    }\n" +
-    "</script>"
+        "    var commentEl = document.getElementById('nyatoriCommentWrapper0511');\n" +
+        "    var commentSystem = commentEl.getAttribute('data-system');\n" +
+        "    var commentSite = commentEl.getAttribute('data-site');\n" +
+        "    // var commentPath = commentEl.getAttribute('data-path');\n" +
+        "    var commentPath = GetUrlRelativePath();\n" +
+        "\n" +
+        "    var $jquery=$.noConflict();\n" +
+        "\n" +
+        "    var vm = new Vue({\n" +
+        "        el: '#commentApp',\n" +
+        "        data: {\n" +
+        "            captchaImage: commentSystem + \"/api.php?controller=public&action=captcha\",\n" +
+        "            captchaImageShow: false,\n" +
+        "            replyComment: null,\n" +
+        "            comment: \"\",\n" +
+        "            username: \"\",\n" +
+        "            email: \"\",\n" +
+        "            replyNotify: false,\n" +
+        "            captcha: \"\",\n" +
+        "            page: 0,\n" +
+        "            commentData: {},\n" +
+        "            commentStack: [],\n" +
+        "            pageList: [],\n" +
+        "            init: false, //判断是否刚加载页面\n" +
+        "            configRequiredUsername: false,\n" +
+        "            configRequiredEmail: false,\n" +
+        "            configReplyNotify: false\n" +
+        "        },\n" +
+        "        computed: {\n" +
+        "            commentClosed() {\n" +
+        "                const comment = this.commentData;\n" +
+        "                if(!comment.article) return false;\n" +
+        "                return !comment.article.commentSwitch;\n" +
+        "            },\n" +
+        "            commentList() {\n" +
+        "                if(!this.commentData) return [];\n" +
+        "                return this.commentData.comment;\n" +
+        "            },\n" +
+        "            commentCount(){\n" +
+        "                if(!this.commentData) return 0;\n" +
+        "                if(!this.commentData.article) return 0;\n" +
+        "                return this.commentData.article.commentCount;\n" +
+        "            },\n" +
+        "            pageCount(){\n" +
+        "                if(!this.commentData) return [];\n" +
+        "                if(!this.commentData.article) return [];\n" +
+        "                if(!this.commentData.config) return [];\n" +
+        "                const count = this.commentData.article.commentRootCount;    //使用顶级（根）评论的数量来计算页数，因为只显示一级的评论在列表上。\n" +
+        "                const perPageCount = this.commentData.config.perPageCount; //分页最大评论数\n" +
+        "                const pageTotal = Math.ceil(count / perPageCount);\n" +
+        "                const currentPage = this.commentData.page + 1;\n" +
+        "                if(pageTotal < 1){\n" +
+        "                    return [];  //一页时不显示页码\n" +
+        "                } else if(pageTotal < 8) {\n" +
+        "                    let pageList = [];\n" +
+        "                    for(let i = 1; i <= pageTotal; i++){\n" +
+        "                        pageList[i-1] = i;\n" +
+        "                    }\n" +
+        "                    return pageList;\n" +
+        "                } else {\n" +
+        "                    let pageList = [1, 2];\n" +
+        "                    const prePage = currentPage - 1;\n" +
+        "                    const nextPage = currentPage + 1;\n" +
+        "                    if(prePage > 2){\n" +
+        "                        pageList.push('...');\n" +
+        "                        pageList.push(prePage);\n" +
+        "                    }\n" +
+        "                    if(currentPage > 2 && currentPage < pageTotal-1){\n" +
+        "                        pageList.push(currentPage);\n" +
+        "                    }\n" +
+        "                    if(nextPage > 2 && nextPage < pageTotal-1){\n" +
+        "                        pageList.push(nextPage);\n" +
+        "                        pageList.push('...');\n" +
+        "                    }\n" +
+        "                    if(nextPage <= 2){\n" +
+        "                        pageList.push('...');\n" +
+        "                    }\n" +
+        "                    pageList.push(pageTotal - 1, pageTotal);\n" +
+        "                    return pageList;\n" +
+        "                }\n" +
+        "            }\n" +
+        "        },\n" +
+        "        methods: {\n" +
+        "            submit() {\n" +
+        "                if(this.captcha.trim().length < 1) {\n" +
+        "                    alert('请输入验证码');\n" +
+        "                    return false;\n" +
+        "                }\n" +
+        "                if(this.comment.length > 200) {\n" +
+        "                    alert('评论内容过长');\n" +
+        "                    return false;\n" +
+        "                }\n" +
+        "                if(this.comment.trim().length < 1){\n" +
+        "                    alert('请输入评论内容');\n" +
+        "                    return false;\n" +
+        "                }\n" +
+        "                if(this.email && !/^\\w+?@\\w+?\\.\\w+?$/g.test(this.email)){\n" +
+        "                    alert('输入邮箱有误');\n" +
+        "                    return false;\n" +
+        "                }\n" +
+        "                let postData = {\n" +
+        "                    site: commentSite,\n" +
+        "                    path: commentPath,\n" +
+        "                    comment: {\n" +
+        "                        comment: this.comment,\n" +
+        "                        username: this.username,\n" +
+        "                        email: this.email\n" +
+        "                    },\n" +
+        "                    replyNotify: this.replyNotify,\n" +
+        "                    captcha: this.captcha\n" +
+        "                };\n" +
+        "                if(this.replyComment && this.replyComment._id && this.replyComment._id['$oid']){\n" +
+        "                    postData.comment.parentId = this.replyComment._id['$oid'];\n" +
+        "                }\n" +
+        "                $jquery.ajax({\n" +
+        "                    method: 'POST',\n" +
+        "                    url: commentSystem + '/api.php?controller=comment&action=submit&site=' + commentSite,\n" +
+        "                    data: JSON.stringify(postData),\n" +
+        "                    dataType: 'json',\n" +
+        "                    contentType: \"application/json\",\n" +
+        "                    xhrFields: {\n" +
+        "                        withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的\n" +
+        "                    },\n" +
+        "                })\n" +
+        "                    .then((response) => {\n" +
+        "                        const data = response;\n" +
+        "                        if(data.code === undefined){\n" +
+        "                            alert('解析失败');\n" +
+        "                            return;\n" +
+        "                        }\n" +
+        "                        this.refreshCaptcha();\n" +
+        "                        if(data.code !== 0){\n" +
+        "                            alert(data.msg);\n" +
+        "                            return;\n" +
+        "                        }\n" +
+        "\n" +
+        "                        this.commentData.comment.unshift({\n" +
+        "                            _id: {'$oid': (new Date()).getTime()},\n" +
+        "                            comment: this.comment,\n" +
+        "                            username: '我',\n" +
+        "                            date: data.isPublic?'刚刚':'审核后显示',\n" +
+        "                            isNew: true,\n" +
+        "                            status: 'public'\n" +
+        "                        });\n" +
+        "\n" +
+        "                        this.comment = this.username = this.email = this.captcha = \"\";\n" +
+        "                        this.replyComment = null;\n" +
+        "                        alert(data.msg);\n" +
+        "                        // this.getList();\n" +
+        "                    })\n" +
+        "                    .catch(function (error) {\n" +
+        "                        console.log(error);\n" +
+        "                    });\n" +
+        "            },\n" +
+        "            getList(page = 1) {\n" +
+        "                $jquery.ajax({\n" +
+        "                    method: 'get',\n" +
+        "                    url: commentSystem + \"/api.php\",\n" +
+        "                    data: {\n" +
+        "                        controller: 'comment',\n" +
+        "                        action: 'list',\n" +
+        "                        site: commentSite,\n" +
+        "                        path: commentPath,\n" +
+        "                        page: (page - 1)\n" +
+        "                    },\n" +
+        "                    dataType: \"json\",\n" +
+        "                    xhrFields: {\n" +
+        "                        withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的\n" +
+        "                    },\n" +
+        "                })\n" +
+        "                    .then((response) => {\n" +
+        "                        var data = response;\n" +
+        "                        if(data.code === undefined){\n" +
+        "                            alert('解析失败');\n" +
+        "                            return;\n" +
+        "                        }\n" +
+        "                        if(data.code !== 0){\n" +
+        "                            alert(data.msg);\n" +
+        "                            return;\n" +
+        "                        }\n" +
+        "\n" +
+        "                        this.configRequiredUsername = data.config.requiredUsername;\n" +
+        "                        this.configRequiredEmail = data.config.requiredEmail;\n" +
+        "                        this.configReplyNotify = data.config.replyNotify;\n" +
+        "                        if(this.configReplyNotify) this.replyNotify = true;\n" +
+        "\n" +
+        "                        this.commentData = data;\n" +
+        "                        this.init = true;\n" +
+        "                    })\n" +
+        "                    .catch(function(error){\n" +
+        "                        console.log(error);\n" +
+        "                    });\n" +
+        "            },\n" +
+        "            refreshCaptcha(){\n" +
+        "                this.captchaImage = commentSystem + \"/api.php?controller=public&action=captcha&token=\"+Math.random();\n" +
+        "                this.captchaImageShow = false;\n" +
+        "            },\n" +
+        "            captchaLoaded(){\n" +
+        "                this.captchaImageShow = true;\n" +
+        "            },\n" +
+        "            replyClick(comment){\n" +
+        "                this.replyComment = comment;\n" +
+        "                console.log(comment);\n" +
+        "            },\n" +
+        "            closeReply(){\n" +
+        "                this.replyComment = null;\n" +
+        "            },\n" +
+        "            getOneComment(comment){\n" +
+        "                $jquery.ajax({\n" +
+        "                    url: commentSystem + \"/api.php\",\n" +
+        "                    data: {\n" +
+        "                        controller: 'comment',\n" +
+        "                        action: 'listone',\n" +
+        "                        id: comment._id['$oid'],\n" +
+        "                        site: commentSite,\n" +
+        "                        path: commentPath,\n" +
+        "                    },\n" +
+        "                    dataType: 'json',\n" +
+        "                    xhrFields: {\n" +
+        "                        withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的\n" +
+        "                    },\n" +
+        "                })\n" +
+        "                    .then((response) => {\n" +
+        "                        const data = response;\n" +
+        "                        if(data.code === undefined){\n" +
+        "                            alert('解析失败');\n" +
+        "                            return;\n" +
+        "                        }\n" +
+        "                        if(data.code !== 0){\n" +
+        "                            alert(data.msg);\n" +
+        "                            return;\n" +
+        "                        }\n" +
+        "\n" +
+        "                        this.commentStack.push(this.commentData);\n" +
+        "                        this.commentData = data;\n" +
+        "                    })\n" +
+        "                    .catch(function(error){\n" +
+        "                        console.log(error);\n" +
+        "                    });\n" +
+        "            },\n" +
+        "            commentHistoryBack() {\n" +
+        "                const commentList = this.commentStack.pop();\n" +
+        "                if(!commentList) return;\n" +
+        "                this.commentData = commentList;\n" +
+        "            },\n" +
+        "            pageChange(page){\n" +
+        "                if(page === '...') return;\n" +
+        "                this.getList(page);\n" +
+        "            }\n" +
+        "        },\n" +
+        "        mounted() {\n" +
+        "            this.$el.style.display = 'block';   //避免闪现上面vue代码的未解析的文本。\n" +
+        "            this.getList();\n" +
+        "        }\n" +
+        "    }); //会去除锚点，如果使用vue router等类似单页应用可能会出现问题。\n" +
+        "\n" +
+        "    function GetUrlRelativePath()\n" +
+        "    {\n" +
+        "        var url = document.location.toString();\n" +
+        "        var arrUrl = url.split(\"//\");\n" +
+        "\n" +
+        "        var start = arrUrl[1].indexOf(\"/\");\n" +
+        "        var relUrl = arrUrl[1].substring(start);//stop省略，截取从start开始到结尾的所有字符\n" +
+        "\n" +
+        "        if(relUrl.indexOf(\"#\") != -1){  //去除锚点\n" +
+        "            relUrl = relUrl.split(\"#\")[0];\n" +
+        "        }\n" +
+        "        if(relUrl.indexOf(\"?\") != -1){\n" +
+        "            relUrl = relUrl.split(\"?\")[0];\n" +
+        "        }\n" +
+        "        return relUrl;\n" +
+        "    }\n" +
+        "</script>"
 commentEl.innerHTML = nyatoriCommentWrapper0511;
 document.write(nyatoriCommentWrapper0511JS);

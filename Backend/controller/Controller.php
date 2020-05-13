@@ -1,5 +1,6 @@
 <?php
 namespace controller;
+use helper\mail\Mail;
 use MongoDB;
 use helper\CacheHelper;
 use Desarrolla2\Cache\File as Cache;
@@ -8,6 +9,7 @@ class Controller
 {
     public $conn = null;
     public $db = null;
+    public $mailer = null;
     public $cache = null;
     public $action = null;
     public $needLogin = [];
@@ -16,6 +18,9 @@ class Controller
 
     public function __construct()
     {
+        // 邮件发送
+        $this->mailer = new Mail(CONFIG['mail']);
+
         //DB连接
         $connStr = 'mongodb://' . CONFIG['DB']['host'] . ':' . CONFIG['DB']['port'];
         $this->conn = new MongoDB\Client($connStr, CONFIG['DB']['params']);

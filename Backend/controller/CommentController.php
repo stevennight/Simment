@@ -10,6 +10,19 @@ class CommentController extends Controller
 {
     public $site = null;
 
+    public function beforeAction()
+    {
+        if(!$this->setHeader()){
+            $this->response([
+                'code' => -1,
+                'msg' => '非法调用'
+            ]);
+            return false;
+        }
+
+        return parent::beforeAction();
+    }
+
     /**
      * http://comment.local/api.php?controller=comment&action=list&site=blog&path=/1&page=0&sign=1
      * @throws \Exception
@@ -26,9 +39,6 @@ class CommentController extends Controller
             return;
         }
 
-        $this->site = $site;
-        if(!$this->setHeader()) return;
-
         //site find
         $siteData = $this->db->site->findOne(['site' => $site], [
             'projection' => [
@@ -37,7 +47,8 @@ class CommentController extends Controller
                 'perPageCount' => 1,
                 'subCommentMainCount' => 1,
                 'requiredUsername' => 1,
-                'requiredEmail' => 1
+                'requiredEmail' => 1,
+                'replyNotify' => 1
             ]
         ]);
         if(!$siteData){
@@ -52,6 +63,7 @@ class CommentController extends Controller
         $subCommentMainCount = intval(@$siteData['subCommentMainCount'])?:5;
         $requiredEmail = @$siteData['requiredEmail'];
         $requiredUsername = @$siteData['requiredUsername'];
+        $replyNotify = @$siteData['replyNotify'];
 
         //article find
         $articleData = $this->db->article->findOne(['siteId' => $siteId, 'path' => $path], ['projection' => [
@@ -76,7 +88,8 @@ class CommentController extends Controller
                     'subCommentMainCount' => $subCommentMainCount,
                     'perPageCount' => $perPageCount,
                     'requiredEmail' => $requiredEmail,
-                    'requiredUsername' => $requiredUsername
+                    'requiredUsername' => $requiredUsername,
+                    'replyNotify' => $replyNotify,
                 ],
                 'comment' => [],
                 'page' => 0
@@ -179,7 +192,8 @@ class CommentController extends Controller
                 'subCommentMainCount' => $subCommentMainCount,
                 'perPageCount' => $perPageCount,
                 'requiredEmail' => $requiredEmail,
-                'requiredUsername' => $requiredUsername
+                'requiredUsername' => $requiredUsername,
+                'replyNotify' => $replyNotify,
             ],
             'comment' => $data,
             'page' => $page
@@ -194,7 +208,6 @@ class CommentController extends Controller
     public function listoneAction(){
         $params = $_GET;
         $id = $params['id'];
-        $site = $params['site'];
 
         if(!$id){
             $this->response([
@@ -203,9 +216,6 @@ class CommentController extends Controller
             ], 'json');
             return;
         }
-
-        $this->site = $site;
-        if(!$this->setHeader()) return;
 
         try {
             $idObj = new ObjectId($id);
@@ -329,6 +339,7 @@ class CommentController extends Controller
         $site = @$params['site'];
         $path = @$params['path'];
         $captcha = @$params['captcha'];
+        $replyNotify = @$params['replyNotify'];
         $comment = @$params['comment']['comment'];
         $username = @$params['comment']['username'];
         $email = @$params['comment']['email'];
@@ -344,10 +355,7 @@ class CommentController extends Controller
             return;
         }
 
-        $this->site = $site;
-        if(!$this->setHeader()) return;
-
-        if(!$isAdmin && (empty($captcha) || $_SESSION['captcha'] !== $captcha)){
+        if(!$isAdmin && (empty($captcha) || @$_SESSION['captcha'] !== $captcha)){
             $_SESSION['captcha'] = null;
             $this->response([
                 'code' => -1,
@@ -375,7 +383,8 @@ class CommentController extends Controller
             'requiredEmail' => 1,
             'requiredUsername' => 1,
             'commentMaxLen' => 1,
-            'adminUsername' => 1
+            'adminUsername' => 1,
+            'replyNotify' => 1
         ]]);
         if(!$siteData){
             $_SESSION['captcha'] = null;
@@ -389,6 +398,7 @@ class CommentController extends Controller
         $auditOn = @$siteData['audit'];
         $commentMaxLen = @$siteData['commentMaxLen']?:250;
         $adminUsername = @$siteData['adminUsername']?:'Admin';
+        $siteReplyNotify = @$siteData['replyNotify']?:false;
         if($isAdmin) $auditOn = false;  //管理员评论不需要审核。
 
         //验证内容长度、邮箱用户名，需要从site集合中取出配置来判断是否必填。
@@ -472,7 +482,7 @@ class CommentController extends Controller
             $parentCommentData = $this->db->comment->findOne([
                 '_id' => $parentIdObj
             ], [
-                'projection' => ['parentRoot' => 1, 'username' => 1]
+                'projection' => ['parentRoot' => 1, 'username' => 1, 'email' => 1, 'comment' => 1, 'replyNotify' => 1]
             ]);
             if(!$parentCommentData){
                 $this->response([
@@ -503,6 +513,7 @@ class CommentController extends Controller
             'status' => $auditOn?'audit':'public',
             'parentId' => $parentIdObj,
             'parentRoot' => $parentRootObj,
+            'replyNotify' => $replyNotify,
             'isAdmin' => $isAdmin?true:false
         ]);
         if($insertResult->getInsertedCount() !== 1){
@@ -536,22 +547,34 @@ class CommentController extends Controller
                 'isPublic' => false
             ];
         }
+
+        //评论可以直接发布时，邮件通知发送 (需要站点允许replyNotify；被回复者设置了邮箱、允许replyNotify)
+        if(!$auditOn && $siteReplyNotify && !empty(@$parentCommentData['email']) && @$parentCommentData['replyNotify']){
+            $this->mailer->send($parentCommentData['email'], '有人回复了您的评论~',  "评论: \"${parentCommentData['comment']}\"，$username 回复道：\"$comment\"", 'html');
+        }
         $this->response($res, 'json');
         return;
     }
 
     public function setHeader(){
-        $origin = $_SERVER['HTTP_REFERER'];
-        if(!preg_match('/^((https|http):\/\/' . $this->site . ')\//', $origin, $matches)){
-            $this->response([
-                'code' => -1,
-                'msg' => '非法调用'
-            ]);
-            preg_match('/^(https|http):\/\//', $origin, $matches);
-            header("Access-Control-Allow-Origin: " . $matches[1] . '://' . $this->site);
+        $site = @$_GET['site']; //请求时需要在get(url param)中放入site参数，包括submit等POST请求action。
+        $origin = @$_SERVER['HTTP_REFERER'];
+
+        if(!$origin) return true;   //直接访问，暂时定为可以访问。
+
+        header("Access-Control-Allow-Credentials: true");   //允许带cookies
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");   //允许methods
+        //has been blocked by CORS policy: Request header field content-type is not allowed by Access-Control-Allow-Headers in preflight response. ↓
+        header("Access-Control-Allow-Headers: DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization");   //允许header
+        //跨域origin
+        if(!preg_match('/^((https|http):\/\/(.*?))+?(\/|$)/', $origin, $matches)){
+            //referer不合法
             return false;
         }
         header("Access-Control-Allow-Origin: " . $matches[1]);
+        if($matches[3] !== $site){
+            return false;
+        }
         return true;
     }
 }

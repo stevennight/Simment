@@ -1,4 +1,6 @@
 node_modules/
 vendor/
 /Backend/runtime/cache/*
+/Backend/config.php
 .idea/
+/Frontend/dist/

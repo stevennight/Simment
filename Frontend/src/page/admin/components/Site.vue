@@ -19,6 +19,7 @@
             <input type="checkbox" v-model="autoCreateArticle">新页面自动创建
             <input type="checkbox" v-model="requiredUsername">用户名必填
             <input type="checkbox" v-model="requiredEmail">邮箱必填
+            <input type="checkbox" v-model="replyNotify">回复邮件通知
             <input type="checkbox" v-model="audit">开启审核
             <br />
             <button class="submit" @click="submit">提交</button>
@@ -35,6 +36,7 @@
                     <td>新页面自动创建</td>
                     <td>用户名必填</td>
                     <td>邮箱必填</td>
+                    <td>回复通知</td>
                     <td>开启审核</td>
                     <td>操作</td>
                 </tr>
@@ -47,6 +49,7 @@
                     <td>{{site.autoCreateArticle?'开启':'关闭'}}</td>
                     <td>{{site.requiredUsername?'开启':'关闭'}}</td>
                     <td>{{site.requiredEmail?'开启':'关闭'}}</td>
+                    <td>{{site.replyNotify?'开启':'关闭'}}</td>
                     <td>{{site.audit?'开启':'关闭'}}</td>
                     <td><button @click="editSite(site)">编辑</button> <button @click="deleteSite(index)">删除</button></td>
                 </tr>
@@ -70,6 +73,7 @@
                 requiredUsername: true,
                 requiredEmail: true,
                 audit: true,
+                replyNotify: false,
                 adminUsername: 'Admin',
                 list: []
             };
@@ -93,6 +97,7 @@
                         requiredUsername: this.requiredUsername,
                         requiredEmail: this.requiredEmail,
                         audit: this.audit,
+                        replyNotify: this.replyNotify,
                         commentMaxLen: this.commentMaxLen,
                         adminUsername: this.adminUsername
                     }
@@ -153,6 +158,7 @@
                 this.requiredUsername = site.requiredUsername;
                 this.requiredEmail = site.requiredEmail;
                 this.audit = site.audit;
+                this.replyNotify = site.replyNotify;
                 this.commentMaxLen = site.commentMaxLen;
                 this.adminUsername = site.adminUsername;
             },
@@ -193,6 +199,7 @@
             resetForm(){
                 this.site = this.id = "";
                 this.autoCreateArticle = this.requiredEmail = this.requiredUsername = this.audit = true;
+                this.replyNotify = false;
                 this.commentMaxLen = 250;
                 this.perPageCount = 10;
                 this.subCommentMainCount = 5;

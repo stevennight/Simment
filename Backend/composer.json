@@ -8,6 +8,7 @@
     },
     "require": {
         "mongodb/mongodb": "^1.6",
-        "desarrolla2/cache": "^3.0"
+        "desarrolla2/cache": "^3.0",
+        "nette/mail": "^3.1"
     }
 }

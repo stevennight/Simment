@@ -3,8 +3,10 @@ require_once 'config.php';
 require_once 'vendor/autoload.php';
 
 try {
-    session_start();
     ini_set('date.timezone', @CONFIG['global']['timezone']);
+    ini_set('session.cookie_samesite', 'None');
+//    ini_set('session.cookie_secure', true);
+    session_start();
 
     $controller = isset($_REQUEST['controller'])?ucfirst($_REQUEST['controller']):null;
     if(!$controller){
