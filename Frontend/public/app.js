@@ -405,7 +405,8 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
         "            init: false, //判断是否刚加载页面\n" +
         "            configRequiredUsername: false,\n" +
         "            configRequiredEmail: false,\n" +
-        "            configReplyNotify: false\n" +
+        "            configReplyNotify: false,\n" +
+        "            configAdminUsername: ''\n" +
         "        },\n" +
         "        computed: {\n" +
         "            commentClosed() {\n" +
@@ -526,6 +527,7 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
         "\n" +
         "                        this.comment = this.username = this.email = this.captcha = \"\";\n" +
         "                        this.replyComment = null;\n" +
+        "                        if(this.commentData.isAdmin) this.username = this.configAdminUsername;\n" +
         "                        alert(data.msg);\n" +
         "                        // this.getList();\n" +
         "                    })\n" +
@@ -563,7 +565,9 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
         "                        this.configRequiredUsername = data.config.requiredUsername;\n" +
         "                        this.configRequiredEmail = data.config.requiredEmail;\n" +
         "                        this.configReplyNotify = data.config.replyNotify;\n" +
+        "                        this.configAdminUsername = data.config.adminUsername;\n" +
         "                        if(this.configReplyNotify) this.replyNotify = true;\n" +
+        "                        if(data.isAdmin) this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员\n" +
         "\n" +
         "                        this.commentData = data;\n" +
         "                        this.init = true;\n" +

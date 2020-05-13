@@ -2,5 +2,10 @@ node_modules/
 vendor/
 /Backend/runtime/cache/*
 /Backend/config.php
+/Backend/public/css/
+/Backend/public/js
+/Backend/public/app.js
+/Backend/public/index.html
+/Backend/public/favicon.ico
 .idea/
 /Frontend/dist/

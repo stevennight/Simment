@@ -48,7 +48,8 @@ class CommentController extends Controller
                 'subCommentMainCount' => 1,
                 'requiredUsername' => 1,
                 'requiredEmail' => 1,
-                'replyNotify' => 1
+                'replyNotify' => 1,
+                'adminUsername' => 1
             ]
         ]);
         if(!$siteData){
@@ -63,7 +64,9 @@ class CommentController extends Controller
         $subCommentMainCount = intval(@$siteData['subCommentMainCount'])?:5;
         $requiredEmail = @$siteData['requiredEmail'];
         $requiredUsername = @$siteData['requiredUsername'];
+        $adminUsername = @$siteData['adminUsername'];
         $replyNotify = @$siteData['replyNotify'];
+        $isAdmin = $this->userLogined()?true:false;
 
         //article find
         $articleData = $this->db->article->findOne(['siteId' => $siteId, 'path' => $path], ['projection' => [
@@ -90,7 +93,9 @@ class CommentController extends Controller
                     'requiredEmail' => $requiredEmail,
                     'requiredUsername' => $requiredUsername,
                     'replyNotify' => $replyNotify,
+                    'adminUsername' => $isAdmin?$adminUsername:'',
                 ],
+                'isAdmin' => $isAdmin,
                 'comment' => [],
                 'page' => 0
             ];
@@ -194,7 +199,9 @@ class CommentController extends Controller
                 'requiredEmail' => $requiredEmail,
                 'requiredUsername' => $requiredUsername,
                 'replyNotify' => $replyNotify,
+                'adminUsername' => $isAdmin?$adminUsername:'',
             ],
+            'isAdmin' => $isAdmin,
             'comment' => $data,
             'page' => $page
         ];

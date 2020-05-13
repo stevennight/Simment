@@ -68,7 +68,8 @@
                 init: false, //判断是否刚加载页面
                 configRequiredUsername: false,
                 configRequiredEmail: false,
-                configReplyNotify: false
+                configReplyNotify: false,
+                configAdminUsername: ''
             };
         },
         components: {
@@ -146,6 +147,7 @@
 
                         this.comment = this.username = this.email = this.captcha = "";
                         this.replyComment = null;
+                        if(this.commentData.isAdmin) this.username = this.configAdminUsername;
                         alert(data.msg);
                         // this.getList();
                     })
@@ -183,7 +185,9 @@
                         this.configRequiredUsername = data.config.requiredUsername;
                         this.configRequiredEmail = data.config.requiredEmail;
                         this.configReplyNotify = data.config.replyNotify;
+                        this.configAdminUsername = data.config.adminUsername;
                         if(this.configReplyNotify) this.replyNotify = true;
+                        if(data.isAdmin) this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
 
                         this.commentData = data;
                         if(!this.init && this.$route.query.comment !== undefined){
