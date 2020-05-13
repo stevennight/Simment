@@ -84,7 +84,9 @@
         },
         methods: {
             submit() {
-                if(this.captcha.trim().length < 1) {
+                let isAdmin = this.commentData.isAdmin;
+
+                if(!isAdmin && this.captcha.trim().length < 1) {
                         alert('请输入验证码');
                     return false;
                 }
@@ -94,6 +96,14 @@
                 }
                 if(this.comment.trim().length < 1){
                     alert('请输入评论内容');
+                    return false;
+                }
+                if(!isAdmin && this.configRequiredUsername && this.username.trim().length < 1){
+                    alert('请输入用户名');
+                    return false;
+                }
+                if(!isAdmin && this.configRequiredEmail && this.email.trim().length < 1){
+                    alert('请输入邮箱');
                     return false;
                 }
                 if(this.email && !/^\w+?@\w+?\.\w+?$/g.test(this.email)){

@@ -464,7 +464,9 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
         "        },\n" +
         "        methods: {\n" +
         "            submit() {\n" +
-        "                if(this.captcha.trim().length < 1) {\n" +
+        "                let isAdmin = this.commentData.isAdmin;\n" +
+        "\n" +
+        "                if(!isAdmin && this.captcha.trim().length < 1) {\n" +
         "                    alert('请输入验证码');\n" +
         "                    return false;\n" +
         "                }\n" +
@@ -474,6 +476,14 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
         "                }\n" +
         "                if(this.comment.trim().length < 1){\n" +
         "                    alert('请输入评论内容');\n" +
+        "                    return false;\n" +
+        "                }\n" +
+        "                if(!isAdmin && this.configRequiredUsername && this.username.trim().length < 1){\n" +
+        "                    alert('请输入用户名');\n" +
+        "                    return false;\n" +
+        "                }\n" +
+        "                if(!isAdmin && this.configRequiredEmail && this.email.trim().length < 1){\n" +
+        "                    alert('请输入邮箱');\n" +
         "                    return false;\n" +
         "                }\n" +
         "                if(this.email && !/^\\w+?@\\w+?\\.\\w+?$/g.test(this.email)){\n" +
