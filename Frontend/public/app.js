@@ -579,7 +579,7 @@ var nyatoriCommentWrapper0511CSS = "<style>\n" +
         "\n" +
         "                        this.commentData = data;\n" +
         "\n" +
-        "                        if(!this.init && commentId !== undefined){\n" +
+        "                        if(!this.init && commentId !== false){\n" +
         "                            this.getOneComment({_id: {'$oid': commentId}});\n" +
         "                        }\n" +
         "\n" +
@@ -677,9 +677,9 @@ var nyatoriCommentWrapper0511CSS = "<style>\n" +
         "            var pair = vars[i].split(\"=\");\n" +
         "            if(pair[0] == variable){return pair[1];}\n" +
         "        }\n" +
-        "        return(false);\n" +
+        "        return false;\n" +
         "    }\n" +
-        "</script>"
+        "</script>";
 commentElHtml = (commentWithStyle?nyatoriCommentWrapper0511CSS:'') + nyatoriCommentWrapper0511;
 commentEl.innerHTML = commentElHtml;
 document.write(nyatoriCommentWrapper0511JS);

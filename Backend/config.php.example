@@ -32,9 +32,14 @@ $config = [
         'timeout' => 20,
         'persistent' => false,
         'context' => null
+
 //        'type' => 'ali',
 //        'server' => 'dm.aliyuncs.com', //dm.aliyuncs.com 华东, dm.ap-southeast-1.aliyuncs.com 新加坡, dm.ap-southeast-2.aliyuncs.com 悉尼
-//        'apikey' =>
+//        'accountName' => "mail", //发信地址
+//        'addressType' => 1, //0随机账号，1发信地址
+//        'fromAlias' => "test",
+//        'accessKeyId' => 'Aliyun AccessKey Id',   //主账号或者ram的AccessKey Id
+//        'accessKeySecret' => 'Aliyun AccessKey Secret'    //主账号或者ram的AccessKey Secret
 
 //        'type' => 'disable',    //全局关闭
     ],
