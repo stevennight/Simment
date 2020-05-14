@@ -383,6 +383,7 @@ var nyatoriCommentWrapper0511CSS = "<style>\n" +
         "    var commentSite = commentEl.getAttribute('data-site');\n" +
         "    // var commentPath = commentEl.getAttribute('data-path');\n" +
         "    var commentPath = GetUrlRelativePath();\n" +
+        "    var commentId = getQueryVariable('comment-id');\n" +
         "\n" +
         "    var vm = new Vue({\n" +
         "        el: '#commentApp',\n" +
@@ -577,6 +578,11 @@ var nyatoriCommentWrapper0511CSS = "<style>\n" +
         "                        if(data.isAdmin) this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员\n" +
         "\n" +
         "                        this.commentData = data;\n" +
+        "\n" +
+        "                        if(!this.init && commentId !== undefined){\n" +
+        "                            this.getOneComment({_id: {'$oid': commentId}});\n" +
+        "                        }\n" +
+        "\n" +
         "                        this.init = true;\n" +
         "                    })\n" +
         "                    .catch(function(error){\n" +
@@ -661,6 +667,17 @@ var nyatoriCommentWrapper0511CSS = "<style>\n" +
         "            relUrl = relUrl.split(\"?\")[0];\n" +
         "        }\n" +
         "        return relUrl;\n" +
+        "    }\n" +
+        "\n" +
+        "    function getQueryVariable(variable)\n" +
+        "    {\n" +
+        "        var query = window.location.search.substring(1);\n" +
+        "        var vars = query.split(\"&\");\n" +
+        "        for (var i=0;i<vars.length;i++) {\n" +
+        "            var pair = vars[i].split(\"=\");\n" +
+        "            if(pair[0] == variable){return pair[1];}\n" +
+        "        }\n" +
+        "        return(false);\n" +
         "    }\n" +
         "</script>"
 commentElHtml = (commentWithStyle?nyatoriCommentWrapper0511CSS:'') + nyatoriCommentWrapper0511;

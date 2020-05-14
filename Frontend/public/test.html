@@ -380,6 +380,7 @@
     var commentSite = commentEl.getAttribute('data-site');
     // var commentPath = commentEl.getAttribute('data-path');
     var commentPath = GetUrlRelativePath();
+    var commentId = getQueryVariable('comment-id');
 
     var vm = new Vue({
         el: '#commentApp',
@@ -574,6 +575,11 @@
                         if(data.isAdmin) this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
 
                         this.commentData = data;
+
+                        if(!this.init && commentId !== undefined){
+                            this.getOneComment({_id: {'$oid': commentId}});
+                        }
+
                         this.init = true;
                     })
                     .catch(function(error){
@@ -658,5 +664,16 @@
             relUrl = relUrl.split("?")[0];
         }
         return relUrl;
+    }
+
+    function getQueryVariable(variable)
+    {
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+        }
+        return(false);
     }
 </script>

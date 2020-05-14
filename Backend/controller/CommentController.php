@@ -385,6 +385,8 @@ class CommentController extends Controller
         //site find
         $siteData = $this->db->site->findOne(['site' => $site], ['projection' => [
             '_id' => 1,
+            'site' => 1,
+            'siteName' => 1,
             'autoCreateArticle' => 1,
             'audit' => 1,
             'requiredEmail' => 1,
@@ -402,6 +404,8 @@ class CommentController extends Controller
             return;
         }
         $siteId = $siteData['_id'];
+        $siteDomain = $siteData['site'];
+        $siteName = $siteData['siteName'];
         $auditOn = @$siteData['audit'];
         $commentMaxLen = @$siteData['commentMaxLen']?:250;
         $adminUsername = @$siteData['adminUsername']?:'Admin';
@@ -448,9 +452,11 @@ class CommentController extends Controller
         //article find
         $articleData = $this->db->article->findOne(['siteId' => $siteId, 'path' => $path], ['projection' => [
             '_id' => 1,
+            'path' => 1,
             'commentSwitch' => 1
         ]]);
         $articleId = @$articleData['_id'];
+        $articlePath = @$articleData['path'];
         $commentOpened = true;
         if(!$articleData){
             if(@$siteData['autoCreateArticle']){
@@ -487,7 +493,8 @@ class CommentController extends Controller
             }
 
             $parentCommentData = $this->db->comment->findOne([
-                '_id' => $parentIdObj
+                '_id' => $parentIdObj,
+                'articleId' => $articleId
             ], [
                 'projection' => ['parentRoot' => 1, 'username' => 1, 'email' => 1, 'comment' => 1, 'replyNotify' => 1]
             ]);
@@ -557,9 +564,74 @@ class CommentController extends Controller
 
         //评论可以直接发布时，邮件通知发送 (需要站点允许replyNotify；被回复者设置了邮箱、允许replyNotify)
         if(!$auditOn && $siteReplyNotify && !empty(@$parentCommentData['email']) && @$parentCommentData['replyNotify']){
-            $this->mailer->send($parentCommentData['email'], '有人回复了您的评论~',  "评论: \"${parentCommentData['comment']}\"，$username 回复道：\"$comment\"", 'html');
+            $unsubscribeData = $this->db->mailUnsubscribe->findOne([
+                'siteId' => $siteId,
+                'email' => $parentCommentData['email']
+            ]);
+            if(!$unsubscribeData){
+                //不在退订列表中，发送邮件。
+                $this->mailer->send(
+                    $parentCommentData['email'],
+                    StringHelper::emailNotifySubject($siteName),
+                    StringHelper::emailNotifyBody(
+                        $siteName,
+                        strval($siteId),
+                        'http://' . $siteDomain . $articlePath,
+                        $parentCommentData['email'],
+                        $parentCommentData['comment'],
+                        $username,
+                        $comment
+                    ),
+                    'html'
+                );
+            }
         }
         $this->response($res, 'json');
+        return;
+    }
+
+    public function mailunsubscribeAction(){
+        $params = $_GET;
+        $email = @$params['email'];
+        $siteId = @$params['siteId'];
+        $nonce = @$params['nonce'];
+        $key = @$params['key'];
+
+        if(!$siteId) {
+            echo '缺少参数';
+            return;
+        }
+        try{
+            $siteIdObj = new ObjectId($siteId);
+        }catch (\Exception $exception){
+            echo '参数有误';
+            return;
+        }
+        if(!$email){
+            echo '邮箱为空';
+            return;
+        }
+        if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+            echo '邮箱有误';
+            return;
+        }
+        if($key !== md5($siteId . $nonce . $email)){
+            echo '非法调用';
+            return;
+        }
+
+        $this->db->mailUnsubscribe->updateOne([
+            'siteId' => $siteIdObj,
+            'email' => $email
+        ], [
+            '$set' => [
+                'siteId' => $siteIdObj,
+                'email' => $email
+            ]
+        ], [
+            'upsert' => true
+        ]);
+        echo '退订成功';
         return;
     }
 

@@ -52,6 +52,7 @@ class AdminController extends Controller
 
         $site = @$params['site'];
         $id = @$params['id'];
+        $siteName = @$params['siteName'];
         $autoCreateArticle = @$params['autoCreateArticle']; //article(path)不存在时是否自动创建，关闭时新页面会禁止评论。
         $subCommentMainCount = @$params['subCommentMainCount'];    //在评论一级列表（非回复评论）页面中，回复评论显示条数 必填
         $adminUsername = @$params['adminUsername'];    //站点管理员用户名，管理员发表评论时会标记为管理员并且使用指定用户名 必填
@@ -95,9 +96,12 @@ class AdminController extends Controller
             ]);
             return;
         }
+
+        if(!$siteName) $siteName = $site;   //如果没有填写，则录入为site(网址）
         if($type === 'insert'){
             $insertResult = $this->db->site->insertOne([
                 'site' => $site,
+                'siteName' => $siteName,
                 'autoCreateArticle' => $autoCreateArticle,
                 'perPageCount' => $perPageCount,
                 'requiredUsername' => $requiredUsername,
@@ -115,6 +119,7 @@ class AdminController extends Controller
             ], [
                 '$set' => [
                     'site' => $site,
+                    'siteName' => $siteName,
                     'autoCreateArticle' => $autoCreateArticle,
                     'perPageCount' => $perPageCount,
                     'requiredUsername' => $requiredUsername,
@@ -549,8 +554,10 @@ class AdminController extends Controller
             ]);
             return;
         }
+        $articlePath = $articleData['path'];
+        $siteIdObj = $articleData['siteId'];
         //获取站点
-        $siteData = $this->db->site->findOne(['_id' => $articleData['siteId']]);
+        $siteData = $this->db->site->findOne(['_id' => $siteIdObj]);
         if(!$siteData){
             $this->response([
                 'code' => -1,
@@ -558,6 +565,8 @@ class AdminController extends Controller
             ]);
             return;
         }
+        $siteName = $siteData['siteName'];
+        $siteDomain = $siteData['site'];
         $replyNotify = $siteData['replyNotify'];
 
         $updateField = ['status' => $status];
@@ -596,7 +605,27 @@ class AdminController extends Controller
 
         //邮件通知发送，通知回复评论的对象 （status audit->public时才通知）(需要站点允许replyNotify；被回复者设置了邮箱、允许replyNotify)
         if($commentData['status'] === 'audit' && $status === 'public' && $replyNotify && !empty(@$parentCommentData['email']) && @$parentCommentData['replyNotify']){
-            $this->mailer->send($parentCommentData['email'], '有人回复了您的评论~',  "评论: \"${parentCommentData['comment']}\"，${commentData['username']} 回复道：\"${commentData['comment']}\"", 'html');
+            $unsubscribeData = $this->db->mailUnsubscribe->findOne([
+                'siteId' => $siteIdObj,
+                'email' => $parentCommentData['email']
+            ]);
+            if(!$unsubscribeData){
+                //不在退订列表中，发送邮件。
+                $this->mailer->send(
+                    $parentCommentData['email'],
+                    StringHelper::emailNotifySubject($siteName),
+                    StringHelper::emailNotifyBody(
+                        $siteName,
+                        strval($siteIdObj),
+                        'http://' . $siteDomain . $articlePath,
+                        $parentCommentData['email'],
+                        $parentCommentData['comment'],
+                        $commentData['username'],
+                        $commentData['comment']
+                    ),
+                    'html'
+                );
+            }
         }
 
         $this->response([

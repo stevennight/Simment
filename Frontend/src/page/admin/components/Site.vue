@@ -3,8 +3,11 @@
         <div class="editWrapper">
             ID:(新增时留空)
             <input v-model="id">
+            <br />
             网站：
             <input v-model="site">
+            站点名称（对外显示）：
+            <input v-model="siteName">
             <br />
             分页评论数量：
             <input type="number" v-model="perPageCount">
@@ -29,6 +32,7 @@
             <table class="listTable">
                 <tr>
                     <td>站点</td>
+                    <td>站点名称</td>
                     <td>分页评论数量</td>
                     <td>回复评论嵌套显示数量</td>
                     <td>评论最大长度</td>
@@ -42,6 +46,7 @@
                 </tr>
                 <tr v-for="(site, index) in list" :key="site['_id']['$oid']">
                     <td>{{site.site}}</td>
+                    <td>{{site.siteName}}</td>
                     <td>{{site.perPageCount}}</td>
                     <td>{{site.subCommentMainCount}}</td>
                     <td>{{site.commentMaxLen}}</td>
@@ -65,6 +70,7 @@
         data() {
             return {
                 site: '',
+                siteName: '',
                 id: '',
                 autoCreateArticle: true,
                 perPageCount: 10,
@@ -91,6 +97,7 @@
                     data: {
                         id: this.id,
                         site: this.site,
+                        siteName: this.siteName,
                         autoCreateArticle: this.autoCreateArticle,
                         perPageCount: this.perPageCount,
                         subCommentMainCount: this.subCommentMainCount,
@@ -152,6 +159,7 @@
             editSite(site){
                 this.id = site._id['$oid'];
                 this.site = site.site;
+                this.siteName = site.siteName;
                 this.autoCreateArticle = site.autoCreateArticle;
                 this.perPageCount = site.perPageCount;
                 this.subCommentMainCount = site.subCommentMainCount;
@@ -197,7 +205,7 @@
                     });
             },
             resetForm(){
-                this.site = this.id = "";
+                this.site = this.siteName = this.id = "";
                 this.autoCreateArticle = this.requiredEmail = this.requiredUsername = this.audit = true;
                 this.replyNotify = false;
                 this.commentMaxLen = 250;
