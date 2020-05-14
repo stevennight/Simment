@@ -388,7 +388,6 @@ commentEl.innerHTML = commentElHtml;
     var commentScrollEl = commentEl.getAttribute('data-scroll-el');
 // var commentPath = commentEl.getAttribute('data-path');
     var commentPath = decodeURIComponent(GetUrlRelativePath());
-    alert(commentPath);
     var commentId = getQueryVariable('comment-id');
 
     var vm = new Vue({
