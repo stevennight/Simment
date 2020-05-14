@@ -617,7 +617,7 @@ class AdminController extends Controller
                     StringHelper::emailNotifyBody(
                         $siteName,
                         strval($siteIdObj),
-                        'http://' . $siteDomain . $articlePath,
+                        'http://' . $siteDomain . $articlePath . '?comment-id=' . $idObj,
                         $parentCommentData['email'],
                         $parentCommentData['comment'],
                         $commentData['username'],

@@ -382,12 +382,13 @@ var commentWithStyle = commentEl.getAttribute('data-with-style');
 commentElHtml = (commentWithStyle?nyatoriCommentWrapper0511CSS:'') + nyatoriCommentWrapper0511;
 commentEl.innerHTML = commentElHtml;
 
-window.onload = function(){
+// window.onload = function(){
     var commentSystem = commentEl.getAttribute('data-system');
     var commentSite = commentEl.getAttribute('data-site');
     var commentScrollEl = commentEl.getAttribute('data-scroll-el');
 // var commentPath = commentEl.getAttribute('data-path');
-    var commentPath = GetUrlRelativePath();
+    var commentPath = decodeURIComponent(GetUrlRelativePath());
+    alert(commentPath);
     var commentId = getQueryVariable('comment-id');
 
     var vm = new Vue({
@@ -588,7 +589,7 @@ window.onload = function(){
                             this.getOneComment({_id: {'$oid': commentId}});
                             setTimeout(() => {
                                 $jquery(commentScrollEl).scrollTop($jquery("#nyatoriCommentWrapper0511").offset().top); //移动到评论区处。
-                            }, 500);   //暂时写死给定一个延迟。
+                            }, 3000);   //暂时写死给定一个延迟。
                         }
 
                         this.init = true;
@@ -689,4 +690,4 @@ window.onload = function(){
         }
         return false;
     }
-}
+// }

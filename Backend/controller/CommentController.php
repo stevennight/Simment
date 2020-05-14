@@ -538,6 +538,7 @@ class CommentController extends Controller
             ], 'json');
             return;
         }
+        $commentId = $insertResult->getInsertedId();
 
         if(!$auditOn) {
             //comment count add
@@ -576,7 +577,7 @@ class CommentController extends Controller
                     StringHelper::emailNotifyBody(
                         $siteName,
                         strval($siteId),
-                        'http://' . $siteDomain . $articlePath,
+                        'http://' . $siteDomain . $articlePath . '?comment-id=' . $commentId,
                         $parentCommentData['email'],
                         $parentCommentData['comment'],
                         $username,
