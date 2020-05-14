@@ -376,16 +376,12 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
     "    </div>\n" +
     "    <div v-if=\"!init\" class=\"nyatoriCommentWrapper0511Loading\">Loading</div>\n" +
     "</div>";
-    var nyatoriCommentWrapper0511JS = "<script src=\"https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js\"></script>\n" +
-    "<script src=\"https://cdn.jsdelivr.net/npm/vue/dist/vue.js\"></script>\n" +
-    "<script type=\"text/javascript\">\n" +
+    var nyatoriCommentWrapper0511JS = "<script type=\"text/javascript\">\n" +
         "    var commentEl = document.getElementById('nyatoriCommentWrapper0511');\n" +
         "    var commentSystem = commentEl.getAttribute('data-system');\n" +
         "    var commentSite = commentEl.getAttribute('data-site');\n" +
         "    // var commentPath = commentEl.getAttribute('data-path');\n" +
         "    var commentPath = GetUrlRelativePath();\n" +
-        "\n" +
-        "    var $jquery=$.noConflict();\n" +
         "\n" +
         "    var vm = new Vue({\n" +
         "        el: '#commentApp',\n" +

@@ -579,7 +579,15 @@ class CommentController extends Controller
             return false;
         }
         header("Access-Control-Allow-Origin: " . $matches[1]);
-        if($matches[3] !== $site){
+
+        //来源地址是当前服务器地址时，
+        $serverName = explode(':', $matches[3]);
+        $server = $_SERVER['SERVER_NAME'];
+        if(!in_array($_SERVER['SERVER_PORT'], [80, 443])){
+            $server .= $_SERVER['SERVER_PORT']; //非80，443则加上端口。不强制区分http, https，因为如果使用CDN，客户端访问和回源有可能不在同一个端口（协议）。其它特殊情况暂不考虑。
+        }
+        //来源地址非当前服务器地址，并且不是指定的site地址时，返回false。
+        if($matches[3] !== $site && $serverName[0] !== $server){
             return false;
         }
         return true;
