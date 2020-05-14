@@ -1,8 +1,9 @@
 var commentEl = document.getElementById('nyatoriCommentWrapper0511');
 var commentSystem = commentEl.getAttribute('data-system');
 var commentSite = commentEl.getAttribute('data-site');
+var commentWithStyle = commentEl.getAttribute('data-with-style');
 
-var nyatoriCommentWrapper0511 = "<style>\n" +
+var nyatoriCommentWrapper0511CSS = "<style>\n" +
     "    .nyatoriCommentWrapper0511, .nyatoriCommentWrapper0511Loading {\n" +
     "        text-align: center;\n" +
     "    }\n" +
@@ -289,8 +290,8 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
     "        font-size: 0.8rem;\n" +
     "        margin-right: 0.5rem;\n" +
     "    }\n" +
-    "</style>\n" +
-    "<div id=\"commentApp\" style=\"display: none\">\n" +
+    "</style>\n";
+    var nyatoriCommentWrapper0511 = "<div id=\"commentApp\" style=\"display: none\">\n" +
     "    <div v-if=\"init\" class=\"nyatoriCommentWrapper0511\">\n" +
     "        <div v-if=\"!commentClosed\" class=\"commentWrapper\">\n" +
     "            <div class=\"send\">\n" +
@@ -662,5 +663,6 @@ var nyatoriCommentWrapper0511 = "<style>\n" +
         "        return relUrl;\n" +
         "    }\n" +
         "</script>"
-commentEl.innerHTML = nyatoriCommentWrapper0511;
+commentElHtml = (commentWithStyle?nyatoriCommentWrapper0511CSS:'') + nyatoriCommentWrapper0511;
+commentEl.innerHTML = commentElHtml;
 document.write(nyatoriCommentWrapper0511JS);
