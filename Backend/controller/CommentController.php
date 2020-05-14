@@ -283,7 +283,7 @@ class CommentController extends Controller
                 $subCommentData['date'] = date('Y-m-d H:i:s', strval($subCommentData['date']) / 1000);
                 $subCommentsData[] = $subCommentData;
             }
-            $subCommentsData = array_reverse($subCommentsData); //翻转数组调整为正序。
+//            $subCommentsData = array_reverse($subCommentsData); //翻转数组调整为正序。
 //            $subCommentsData = array_merge([$commentData], $subCommentsData);   //第一个插入指定的评论。
             $type = 'dialog';
         }else{

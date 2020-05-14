@@ -136,6 +136,10 @@
     .nyatoriCommentWrapper0511 #commentList .commentContainer {
         border-bottom: 1px solid #ddd;
     }
+    .nyatoriCommentWrapper0511 #commentList .commentContainer .commentWrapper.highlight {
+        color: darkgoldenrod;
+        font-weight: bolder;
+    }
     .nyatoriCommentWrapper0511 #commentList .commentContainer .commentWrapper {
         display: flex;
     }
@@ -327,7 +331,7 @@
                 <div class="total" v-if="commentData.type === 'main'"><span>{{commentCount}}</span>条评论</div>
                 <div class="listHistoryBack" v-if="commentData.type !== 'main'" @click="commentHistoryBack">返回列表</div>
                 <div class="commentContainer" v-for="comment in commentList" :key="comment._id['$oid']">
-                    <div class="commentWrapper">
+                    <div class="commentWrapper" :class="commentData.highlight === comment._id['$oid']?'highlight':''">
                         <div class="left avatar">{{comment.username[0]}}</div>
                         <div v-if="comment.status === 'public'" class="right">
                             <div class="username">{{comment.username}}</div>
@@ -578,6 +582,9 @@
 
                         if(!this.init && commentId !== false){
                             this.getOneComment({_id: {'$oid': commentId}});
+                            setTimeout(() => {
+                                $jquery(commentScrollEl).scrollTop($jquery("#nyatoriCommentWrapper0511").offset().top); //移动到评论区处。
+                            }, 500);   //暂时写死给定一个延迟。
                         }
 
                         this.init = true;
@@ -627,6 +634,8 @@
                         }
 
                         this.commentStack.push(this.commentData);
+
+                        data.highlight = comment._id['$oid'];
                         this.commentData = data;
                     })
                     .catch(function(error){

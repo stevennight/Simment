@@ -251,6 +251,8 @@
                         }
 
                         this.commentStack.push(this.commentData);
+
+                        data.highlight = comment._id['$oid'];
                         this.commentData = data;
                     })
                     .catch(function(error){

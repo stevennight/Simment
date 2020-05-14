@@ -3,7 +3,7 @@
         <div class="total" v-if="commentData.type === 'main'"><span>{{commentCount}}</span>条评论</div>
         <div class="listHistoryBack" v-if="commentData.type !== 'main'" @click="commentHistroyBack">返回列表</div>
         <div class="commentContainer" v-for="comment in commentList" :key="comment._id['$oid']">
-            <div class="commentWrapper">
+            <div class="commentWrapper" :class="commentData.highlight === comment._id['$oid']?'highlight':''">
                 <div class="left avatar">{{comment.username[0]}}</div>
                 <div v-if="comment.status === 'public'" class="right">
                     <div class="username">{{comment.username}}</div>
@@ -150,6 +150,9 @@
                 color red
         .commentContainer
             border-bottom 1px solid #ddd
+            .commentWrapper.highlight
+                color darkgoldenrod
+                font-weight bolder
             .commentWrapper
                 display flex
                 .left
