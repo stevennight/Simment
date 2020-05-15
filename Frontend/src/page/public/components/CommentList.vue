@@ -2,7 +2,7 @@
     <div id="commentList">
         <div class="total" v-if="commentData.type === 'main'"><span>{{commentCount}}</span>条评论</div>
         <div class="listHistoryBack" v-if="commentData.type !== 'main'" @click="commentHistroyBack">返回列表</div>
-        <div class="commentContainer" v-for="comment in commentList" :key="comment._id['$oid']">
+        <div class="commentContainer" v-for="(comment, index) in commentList" :key="comment._id['$oid']">
             <div class="commentWrapper" :class="commentData.highlight === comment._id['$oid']?'highlight':''">
                 <div class="left avatar">{{comment.username[0]}}</div>
                 <div v-if="comment.status === 'public'" class="right">
@@ -36,6 +36,7 @@
                 </div>
                 <div v-if="comment.sub.length > commentData.config.subCommentMainCount" class="subCommentMore" @click="getOne(comment)">查看更多</div>
             </div>
+            <div v-if="index === commentList.length - 1 && commentData.more" class="commentMore" @click="getOne(commentData.current,true)">加载更多</div>
         </div>
         <div v-if="commentData.type === 'main'" class="pageList">
             <a :class="page === commentData.page + 1?'active':''" v-for="(page, index) in pageCount" :key="index" @click="pageChange(page)">
@@ -111,7 +112,8 @@
             replyClick(comment){
                 this.$emit('reply', comment);
             },
-            getOne(comment){
+            getOne(comment, getMore = null){
+                comment.getMore = getMore;
                 this.$emit('getOne', comment);
             },
             commentHistroyBack(){
@@ -150,9 +152,14 @@
                 color red
         .commentContainer
             border-bottom 1px solid #ddd
+            .commentMore
+                background #eee
+                border-radius .3rem
             .commentWrapper.highlight
                 color darkgoldenrod
                 font-weight bolder
+                user-select none
+                cursor pointer
             .commentWrapper
                 display flex
                 .left

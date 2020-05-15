@@ -136,6 +136,12 @@
     .nyatoriCommentWrapper0511 #commentList .commentContainer {
         border-bottom: 1px solid #ddd;
     }
+    .nyatoriCommentWrapper0511 #commentList .commentContainer .commentMore {
+        background: #eee;
+        border-radius: .3rem;
+        user-select: none;
+        cursor: pointer;
+    }
     .nyatoriCommentWrapper0511 #commentList .commentContainer .commentWrapper.highlight {
         color: darkgoldenrod;
         font-weight: bolder;
@@ -330,7 +336,7 @@
             <div id="commentList">
                 <div class="total" v-if="commentData.type === 'main'"><span>{{commentCount}}</span>条评论</div>
                 <div class="listHistoryBack" v-if="commentData.type !== 'main'" @click="commentHistoryBack">返回列表</div>
-                <div class="commentContainer" v-for="comment in commentList" :key="comment._id['$oid']">
+                <div class="commentContainer" v-for="(comment, index) in commentList" :key="comment._id['$oid']">
                     <div class="commentWrapper" :class="commentData.highlight === comment._id['$oid']?'highlight':''">
                         <div class="left avatar">{{comment.username[0]}}</div>
                         <div v-if="comment.status === 'public'" class="right">
@@ -364,6 +370,7 @@
                         </div>
                         <div v-if="comment.sub.length > commentData.config.subCommentMainCount" class="subCommentMore" @click="getOneComment(comment)">查看更多</div>
                     </div>
+                    <div v-if="index === commentList.length - 1 && commentData.more" class="commentMore" @click="getOneComment(commentData.current, true)">加载更多</div>
                 </div>
                 <div v-if="commentData.type === 'main'" class="pageList">
                     <a :class="page === commentData.page + 1?'active':''" v-for="(page, index) in pageCount" :key="index" @click="pageChange(page)">
@@ -382,8 +389,10 @@
     var commentEl = document.getElementById('nyatoriCommentWrapper0511');
     var commentSystem = commentEl.getAttribute('data-system');
     var commentSite = commentEl.getAttribute('data-site');
+    var commentScrollEl = commentEl.getAttribute('data-scroll-el');
     // var commentPath = commentEl.getAttribute('data-path');
     var commentPath = GetUrlRelativePath();
+    commentPath = decodeURIComponent(commentPath);
     var commentId = getQueryVariable('comment-id');
 
     var vm = new Vue({
@@ -607,13 +616,17 @@
             closeReply(){
                 this.replyComment = null;
             },
-            getOneComment(comment){
+            getOneComment(comment, getMore = null){
+                if(getMore){
+                    getMore = this.commentData.more['$oid']
+                }
                 $jquery.ajax({
                     url: commentSystem + "/api.php",
                     data: {
                         controller: 'comment',
                         action: 'listone',
                         id: comment._id['$oid'],
+                        more: getMore,
                         site: commentSite,
                         path: commentPath,
                     },
@@ -633,10 +646,15 @@
                             return;
                         }
 
-                        this.commentStack.push(this.commentData);
+                        if(getMore){
+                            this.commentData.comment = this.commentData.comment.concat(data.comment);
+                            this.commentData.more = data.more;
+                        } else {
+                            this.commentStack.push(this.commentData);
 
-                        data.highlight = comment._id['$oid'];
-                        this.commentData = data;
+                            data.highlight = comment._id['$oid'];
+                            this.commentData = data;
+                        }
                     })
                     .catch(function(error){
                         console.log(error);

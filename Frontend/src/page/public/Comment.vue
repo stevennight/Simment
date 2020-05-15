@@ -224,6 +224,10 @@
                 this.replyComment = null;
             },
             getOneComment(comment){
+                var getMore = comment.getMore;
+                if(getMore){
+                    getMore = this.commentData.more['$oid']
+                }
                 this.axios({
                     method: 'get',
                     url: "/api.php",
@@ -231,6 +235,7 @@
                         controller: 'comment',
                         action: 'listone',
                         id: comment._id['$oid'],
+                        more: getMore,
                         site: this.$route.params.site,
                         path: this.$route.params.path,
                     }
@@ -250,10 +255,15 @@
                             return;
                         }
 
-                        this.commentStack.push(this.commentData);
+                        if(getMore){
+                            this.commentData.comment = this.commentData.comment.concat(data.comment);
+                            this.commentData.more = data.more;
+                        } else {
+                            this.commentStack.push(this.commentData);
 
-                        data.highlight = comment._id['$oid'];
-                        this.commentData = data;
+                            data.highlight = comment._id['$oid'];
+                            this.commentData = data;
+                        }
                     })
                     .catch(function(error){
                         console.log(error);

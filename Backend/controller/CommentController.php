@@ -214,7 +214,9 @@ class CommentController extends Controller
      */
     public function listoneAction(){
         $params = $_GET;
-        $id = $params['id'];
+        $id = @$params['id'];
+        $site = @$params['site'];
+        $getMore = @$params['more'];
 
         if(!$id){
             $this->response([
@@ -223,6 +225,22 @@ class CommentController extends Controller
             ], 'json');
             return;
         }
+
+        $siteData = $this->db->site->findOne([
+            'site' => $site,
+        ], [
+            'projection' => [
+                '_id' => 1, 'perPageCount' => 1
+            ]
+        ]);
+        if(!$siteData){
+            $this->response([
+                'code' => -1,
+                'msg' => '站点未找到'
+            ], 'json');
+            return;
+        }
+        $perPageCount = intval(@$siteData['perPageCount'])?:10;
 
         try {
             $idObj = new ObjectId($id);
@@ -239,7 +257,7 @@ class CommentController extends Controller
         ], [
             'projection' => [
                 '_id' => 1, 'username' => 1, 'comment' => 1, 'status' => 1, 'parentId' => 1, 'parentRoot' => 1,
-                'isAdmin' => 1, 'date' => 1
+                'isAdmin' => 1, 'date' => 1, 'articleId' => 1
             ]
         ]);
         if(!$commentData) {
@@ -251,25 +269,51 @@ class CommentController extends Controller
         }
         $commentData['date'] = date('Y-m-d H:i:s', strval($commentData['date']) / 1000);
 
+        $articleData = $this->db->article->findOne([
+            '_id' => $commentData['articleId'], 'siteId' => $siteData['_id']
+        ], [
+            'projection' => [
+                '_id' => 1
+            ]
+        ]);
+        if(!$articleData){
+            $this->response([
+                'code' => -1,
+                'msg' => '数据不匹配'
+            ], 'json');
+            return;
+        }
+
         $type = "";
+        //获取更多的模式
+        if($getMore){
+            //生成object id 。
+            try{
+                $getMoreObj = new ObjectId($getMore);
+            }catch (\Exception $exception){
+                $this->response([
+                    'code' => -1,
+                    'msg' => '参数有误'
+                ], 'json');
+                return;
+            }
+        }
         if($commentData['parentRoot']){
             //二级评论
             //往前搜索
-            $subCommentsData = [$commentData];
-            $subCommentData = $commentData;
-            while(true){
-                if(!$subCommentData) {
-                    $this->response([
-                        'code' => -1,
-                        'msg' => '内部错误'
-                    ], 'json');
-                    return;
-                }
+            $more = false;
+            $subCommentsData = [];
+            if($getMore){
+                $parentIdObj = $getMoreObj;
+            }else{
+                $subCommentsData[] = $commentData;
+                $subCommentData = $commentData;
                 $parentIdObj = $subCommentData['parentId'];
-                if(!$parentIdObj){
-                    break;
-                }
-                $subCommentData = $this->db->comment->findOne(['_id' => $parentIdObj], [
+            }
+            for($i = 0; $parentIdObj && $i < $perPageCount; $i++){  //限制显示数量
+                $subCommentData = $this->db->comment->findOne([
+                    '_id' => $parentIdObj
+                ], [
                     'projection' => [
                         '_id' => 1, 'username' => 1, 'comment' => 1, 'status' => 1, 'parentId' => 1, 'parentRoot' => 1,
                         'isAdmin' => 1, 'date' => 1
@@ -282,17 +326,34 @@ class CommentController extends Controller
                 }
                 $subCommentData['date'] = date('Y-m-d H:i:s', strval($subCommentData['date']) / 1000);
                 $subCommentsData[] = $subCommentData;
+
+                $parentIdObj = $subCommentData['parentId'];
+                if(!$parentIdObj){
+                    $more = false;
+                    break;
+                }else{
+                    $more = $parentIdObj;
+                }
             }
 //            $subCommentsData = array_reverse($subCommentsData); //翻转数组调整为正序。
 //            $subCommentsData = array_merge([$commentData], $subCommentsData);   //第一个插入指定的评论。
             $type = 'dialog';
         }else{
             //一级评论
+            $match = [
+                'parentRoot' => $idObj, 'status' => 'public'
+            ];
+            if($getMore) {
+                $match['_id'] = [
+                    '$gte' => $getMoreObj
+                ];
+            }
             $subCommentsData = $this->db->comment->aggregate([
                 [
-                    '$match' => [
-                        'parentRoot' => $idObj, 'status' => 'public'
-                    ]
+                    '$match' => $match
+                ],
+                [
+                    '$limit' => $perPageCount + 1
                 ],
                 [
                     '$project' => [
@@ -302,7 +363,15 @@ class CommentController extends Controller
                     ]
                 ]
             ])->toArray();
-            $subCommentsData = array_merge([$commentData], $subCommentsData);   //第一个插入指定的评论。
+            $more = false;
+            if(count($subCommentsData) > $perPageCount){
+                $lastComment = array_pop($subCommentsData);
+                $more = $lastComment['_id'];
+            }
+            if(!$getMore){
+                //获取更多时不需要插入当前评论，否则需要插入当前评论到评论列表中。
+                $subCommentsData = array_merge([$commentData], $subCommentsData);   //第一个插入指定的评论。
+            }
             $type = 'top_sub';
         }
 
@@ -310,7 +379,10 @@ class CommentController extends Controller
             'code' => 0,
             'msg' => '成功',
             'type' => $type,
-            'comment' => $subCommentsData
+            'more' => $more,
+            'comment' => $subCommentsData,
+            'current' => $commentData,
+            'isAdmin' => $this->userLogined()?true:false
         ], 'json');
         return;
     }
@@ -660,9 +732,9 @@ class CommentController extends Controller
             $server .= $_SERVER['SERVER_PORT']; //非80，443则加上端口。不强制区分http, https，因为如果使用CDN，客户端访问和回源有可能不在同一个端口（协议）。其它特殊情况暂不考虑。
         }
         //来源地址非当前服务器地址，并且不是指定的site地址时，返回false。
-        if($matches[3] !== $site && $serverName[0] !== $server){
-            return false;
-        }
+//        if($matches[3] !== $site && $serverName[0] !== $server){
+//            return false;
+//        }
         return true;
     }
 }
