@@ -41,6 +41,10 @@ const routes = [
       }
     ]
   },
+  {
+    path: '*',
+    beforeEnter() {location.href = '/404.html'}
+  }
 ]
 
 const router = new VueRouter({
