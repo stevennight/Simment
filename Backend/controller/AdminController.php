@@ -519,7 +519,7 @@ class AdminController extends Controller
             [
                 '$project' => [
                     'comment' => 1, 'email' => 1, 'ip' => 1, 'parentRoot' => 1, 'parentId' => 1, 'status' => 1, 'username' => 1,
-                    'isAdmin' => 1, 'articleId' => 1, 'article' => 1, 'site' => 1,
+                    'isAdmin' => 1, 'articleId' => 1, 'article' => 1, 'site' => 1, 'replyNotify' => 1,
                     'date' => [
                         '$dateToString' => ['format' => "%Y-%m-%d %H:%M:%S", 'date' => '$date', 'timezone' => '+08:00']
                     ],
@@ -758,7 +758,7 @@ class AdminController extends Controller
             '_id' => $parentIdObj
         ], [
             'projection' => [
-                'parentRoot' => 1, 'articleId' => 1, 'email' => 1, 'replyNotify' => 1, 'username' => 1
+                'parentRoot' => 1, 'articleId' => 1, 'email' => 1, 'replyNotify' => 1, 'username' => 1, 'comment' => 1
             ]
         ]);
         if(!$parentCommentData){
@@ -795,7 +795,7 @@ class AdminController extends Controller
             '_id' => $siteIdObj
         ], [
             'projection' => [
-                'siteName' => 1, 'replyNotify' => 1, 'site' => 1
+                'siteName' => 1, 'replyNotify' => 1, 'site' => 1, 'adminEmail' => 1, 'adminUsername' => 1
             ]
         ]);
         if(!$siteData){
@@ -809,6 +809,7 @@ class AdminController extends Controller
         $replyNotify = $siteData['replyNotify'];
         $siteName = $siteData['siteName'];
         $adminUsername = $siteData['adminUsername'];
+        $adminEmail = $siteData['adminEmail'];
 
         //父级为二级评论时，comment增加回复xxx的标识。
         if($parentCommentParentRoot){
@@ -819,14 +820,15 @@ class AdminController extends Controller
         $insertResult = $this->db->comment->insertOne([
             'articleId' => $parentCommentArticleIdObj,
             'username' => $adminUsername,
-            'email' => '',
+            'email' => $adminEmail, //自动填入站点中设置的管理员邮箱。
             'comment' => $comment,
             'date' => new UTCDateTime(microtime(true) * 1000),
             'ip' => IpHelper::getUserIp(),
             'status' => 'public',
             'parentId' => $parentIdObj,
             'parentRoot' => $parentCommentParentRoot?:$parentIdObj,
-            'isAdmin' => true
+            'isAdmin' => true,
+            'replyNotify' => $replyNotify   //根据站点设置去判断是否对回复进行通知
         ]);
         if($insertResult->getInsertedCount() < 1){
             $this->response([
