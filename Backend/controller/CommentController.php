@@ -734,9 +734,9 @@ class CommentController extends Controller
             $server .= $_SERVER['SERVER_PORT']; //非80，443则加上端口。不强制区分http, https，因为如果使用CDN，客户端访问和回源有可能不在同一个端口（协议）。其它特殊情况暂不考虑。
         }
         //来源地址非当前服务器地址，并且不是指定的site地址时，返回false。
-//        if($matches[3] !== $site && $serverName[0] !== $server){
-//            return false;
-//        }
+        if($matches[3] !== $site && $serverName[0] !== $server){
+            return false;
+        }
         return true;
     }
 }
