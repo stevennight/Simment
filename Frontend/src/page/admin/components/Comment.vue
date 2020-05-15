@@ -15,35 +15,48 @@
                 <option value="audit">待审</option>
                 <option value="hidden">隐藏</option>
             </select>
+            <input type="text" v-model="searchParentRoot" placeholder="一级评论ID">
+            <input type="text" v-model="searchParentId" placeholder="父级ID">
+            <input type="text" v-model="searchId" placeholder="评论ID">
             <button @click="search">搜索</button>
         </div>
         <div class="list">
             <table class="listTable">
                 <tr>
                     <td>序号</td>
+                    <td>评论ID</td>
+                    <td>站点</td>
+                    <td>路径</td>
                     <td>用户</td>
                     <td>管理员</td>
                     <td>邮箱</td>
                     <td>评论</td>
                     <td>时间</td>
                     <td>IP</td>
+                    <td>回复通知</td>
+                    <td>父级评论</td>
                     <td>状态</td>
                     <td>操作</td>
                 </tr>
                 <tr v-show="loading">
-                    <td colspan="4">Loading...</td>
+                    <td colspan="14">Loading...</td>
                 </tr>
                 <tr v-show="error">
-                    <td colspan="4">{{error}}</td>
+                    <td colspan="14">{{error}}</td>
                 </tr>
                 <tr v-for="(comment, index) in commentList" :key="comment._id['$oid']">
                     <td>{{index+1}}</td>
+                    <td>{{comment._id['$oid']}}</td>
+                    <td>{{comment.site[0]?comment.site[0].site:'×'}}</td>
+                    <td>{{comment.article[0]?comment.article[0].path:'×'}}</td>
                     <td>{{comment.username}}</td>
                     <td>{{comment.isAdmin?'√':'×'}}</td>
                     <td>{{comment.email}}</td>
-                    <td>{{comment.comment}}</td>
+                    <td :title="comment.comment">{{comment.comment.slice(0, 20)}}...</td>
                     <td>{{comment.date}}</td>
                     <td>{{comment.ip}}</td>
+                    <td>{{comment.replyNotify?'√':'×'}}</td>
+                    <td>{{comment.parentId?comment.parentId['$oid']:'无'}}</td>
                     <td>{{comment.status}}</td>
                     <td>
                         <button v-if="['audit', 'hidden'].indexOf(comment.status) > -1" @click="updateComment(index, 'public')">通过</button>&nbsp;
@@ -62,19 +75,6 @@
                 跳转：<input v-model="page" />
             </div>
         </div>
-<!--        <div v-show="editShow" class="form">-->
-<!--            <div>id:<input v-model="editFieldId"/></div>-->
-<!--            <div>-->
-<!--                站点：-->
-<!--                <select v-model="editFieldSiteId">-->
-<!--                    <option>请选择一个站点</option>-->
-<!--                    <option v-for="siteOption in siteList" :value="siteOption._id['$oid']" :key="siteOption._id['$oid']">{{siteOption.site}}</option>-->
-<!--                </select>-->
-<!--            </div>-->
-<!--            <div>路径:<input v-model="editFieldPath"/></div>-->
-<!--            <div><input type="checkbox" v-model="editFieldCommentSwitch"/>开启评论</div>-->
-<!--            <div><button @click="editPath">提交</button> <button @click="editReset">重置</button> <button @click="editToggle(false)">关闭</button></div>-->
-<!--        </div>-->
     </div>
 </template>
 
@@ -84,9 +84,12 @@
         data() {
             return {
                 siteList: [],
-                searchSite: null,
+                searchSite: '',
                 searchPath: '',
-                searchStatus: null,
+                searchStatus: '',
+                searchParentRoot: '',
+                searchParentId: '',
+                searchId: '',
                 commentList: [],
                 loading: false,
                 error: false,
@@ -126,6 +129,9 @@
                         siteId: this.searchSite,
                         path: this.searchPath,
                         status: this.searchStatus,
+                        id: this.searchId,
+                        parentId: this.searchParentId,
+                        parentRoot: this.searchParentRoot,
                         page: this.page - 1,
                     }
                 })
@@ -267,7 +273,7 @@
             },
             pageChange(offset){
                 //上一页、下一页
-                let page = this.page + offset;
+                let page = parseInt(this.page) + offset;
                 if(page <= 0){
                     return;
                 }
@@ -302,15 +308,22 @@
 <style lang="stylus" scoped>
     #comment
         .search
-            button
+            button, input
                 margin .3rem
         .list
             margin .3rem
             width 100%
+            height 100%
             border-top 1px solid #ccc
             border-bottom 1px solid #ccc
+            overflow auto
             .listTable
                 width 100%
+                table-layout fixed
+                word-break: break-all
+                tr
+                    td
+                        overflow hidden
                 tr:hover
                     background yellowgreen
         .pageWrapper

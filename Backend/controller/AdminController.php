@@ -409,6 +409,9 @@ class AdminController extends Controller
         $path = @$params['path'];
         $search = @$params['search'];
         $status = @$params['status'];
+        $id = @$params['id'];
+        $parentId = @$params['parentId'];
+        $parentRoot = @$params['parentRoot'];
         $page = $params['page'];
 
         $findWhere = [
@@ -418,6 +421,23 @@ class AdminController extends Controller
 
         if($status){
             $findWhere['status'] = $status;
+        }
+        try {
+            if($id){
+                $findWhere['_id'] = new ObjectId($id);
+            }
+            if($parentId){
+                $findWhere['parentId'] = new ObjectId($parentId);
+            }
+            if($parentRoot){
+                $findWhere['parentRoot'] = new ObjectId($parentRoot);
+            }
+        }catch (\Exception $exception){
+            $this->response([
+                'code' => -1,
+                'msg' => 'ID参数有误',
+            ]);
+            return;
         }
 
         $articleWhere = [];
@@ -469,7 +489,7 @@ class AdminController extends Controller
                 '$match' => $findWhere
             ],
             [
-                '$sort' => ['date' => -1],
+                '$sort' => ['_id' => -1],
             ],
             [
                 '$skip' => $skip,
@@ -478,12 +498,28 @@ class AdminController extends Controller
                 '$limit' => $perPageCount,
             ],
             [
+                '$lookup' => [
+                    'localField' => 'articleId',
+                    'foreignField' => '_id',
+                    'from' => 'article',
+                    'as' => 'article',
+                ]
+            ],
+            [
+                '$lookup' => [
+                    'localField' => 'article.0.siteId',
+                    'foreignField' => '_id',
+                    'from' => 'site',
+                    'as' => 'site',
+                ]
+            ],
+            [
                 '$project' => [
-                    'articleId' => 1, 'comment' => 1, 'email' => 1, 'ip' => 1, 'parentRoot' => 1, 'parentId' => 1, 'status' => 1, 'username' => 1,
-                    'isAdmin' => 1,
+                    'comment' => 1, 'email' => 1, 'ip' => 1, 'parentRoot' => 1, 'parentId' => 1, 'status' => 1, 'username' => 1,
+                    'isAdmin' => 1, 'articleId' => 1, 'article' => 1, 'site' => 1,
                     'date' => [
                         '$dateToString' => ['format' => "%Y-%m-%d %H:%M:%S", 'date' => '$date', 'timezone' => '+08:00']
-                    ]
+                    ],
                 ]
             ]
         ])->toArray();
@@ -715,32 +751,78 @@ class AdminController extends Controller
             return;
         }
 
-        $parentArticleData = $this->db->comment->findOne([
+        $parentCommentData = $this->db->comment->findOne([
             '_id' => $parentIdObj
         ], [
             'projection' => [
-                'parentRoot' => 1, 'articleId' => 1
+                'parentRoot' => 1, 'articleId' => 1, 'email' => 1, 'replyNotify' => 1, 'username' => 1
             ]
         ]);
-        if(!$parentArticleData){
+        if(!$parentCommentData){
             $this->response([
                 'code' => -1,
                 'msg' => '评论未找到',
             ]);
             return;
         }
-        $parentArticleParentRoot = $parentArticleData['parentRoot']?:$parentIdObj;
-        $parentArticleArticleId = $parentArticleData['articleId'];
+        $parentCommentParentRoot = $parentCommentData['parentRoot'];
+        $parentCommentArticleIdObj = $parentCommentData['articleId'];
+        $parentCommentUsername = $parentCommentData['username'];
+
+        //article
+        $articleData = $this->db->article->findOne([
+            '_id' => $parentCommentArticleIdObj
+        ], [
+            'projection' => [
+                'siteId' => 1, 'path' => 1
+            ]
+        ]);
+        if(!$articleData){
+            $this->response([
+                'code' => -1,
+                'msg' => '页面未找到',
+            ]);
+            return;
+        }
+        $siteIdObj = $articleData['siteId'];
+        $articlePath = $articleData['path'];
+
+        //site
+        $siteData = $this->db->site->findOne([
+            '_id' => $siteIdObj
+        ], [
+            'projection' => [
+                'siteName' => 1, 'replyNotify' => 1, 'site' => 1
+            ]
+        ]);
+        if(!$siteData){
+            $this->response([
+                'code' => -1,
+                'msg' => '站点未找到',
+            ]);
+            return;
+        }
+        $siteDomain = $siteData['site'];
+        $replyNotify = $siteData['replyNotify'];
+        $siteName = $siteData['siteName'];
+        $adminUsername = $siteData['adminUsername'];
+
+        //父级为二级评论时，comment增加回复xxx的标识。
+        if($parentCommentParentRoot){
+            $comment = '回复 ' . $parentCommentUsername . '：' . $comment;
+        }
+
+        //插入评论
         $insertResult = $this->db->comment->insertOne([
-            'articleId' => $parentArticleArticleId,
-            'username' => 'Admin',
+            'articleId' => $parentCommentArticleIdObj,
+            'username' => $adminUsername,
             'email' => '',
             'comment' => $comment,
             'date' => new UTCDateTime(microtime(true) * 1000),
             'ip' => IpHelper::getUserIp(),
             'status' => 'public',
             'parentId' => $parentIdObj,
-            'parentRoot' => $parentArticleParentRoot,
+            'parentRoot' => $parentCommentParentRoot?:$parentIdObj,
             'isAdmin' => true
         ]);
         if($insertResult->getInsertedCount() < 1){
@@ -750,8 +832,34 @@ class AdminController extends Controller
             ]);
             return;
         }
+        $idObj = $insertResult->getInsertedId();
 
-        DataHelper::updateCommentCount($this->db, $parentArticleArticleId, 0, 1);
+        DataHelper::updateCommentCount($this->db, $parentCommentArticleIdObj, 0, 1);
+
+        //邮件通知发送，通知回复评论的对象 （status audit->public时才通知）(需要站点允许replyNotify；被回复者设置了邮箱、允许replyNotify)
+        if($replyNotify && !empty(@$parentCommentData['email']) && @$parentCommentData['replyNotify']){
+            $unsubscribeData = $this->db->mailUnsubscribe->findOne([
+                'siteId' => $siteIdObj,
+                'email' => $parentCommentData['email']
+            ]);
+            if(!$unsubscribeData){
+                //不在退订列表中，发送邮件。
+                $this->mailer->send(
+                    $parentCommentData['email'],
+                    StringHelper::emailNotifySubject($siteName),
+                    StringHelper::emailNotifyBody(
+                        $siteName,
+                        strval($siteIdObj),
+                        'http://' . $siteDomain . $articlePath . '?comment-id=' . $idObj,
+                        $parentCommentData['email'],
+                        $parentCommentData['comment'],
+                        $adminUsername,
+                        $comment
+                    ),
+                    'html'
+                );
+            }
+        }
 
         $this->response([
             'code' => 0,
