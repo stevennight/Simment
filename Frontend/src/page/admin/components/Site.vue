@@ -175,6 +175,7 @@
                 this.replyNotify = site.replyNotify;
                 this.commentMaxLen = site.commentMaxLen;
                 this.adminUsername = site.adminUsername;
+                this.adminEmail = site.adminEmail;
             },
             deleteSite(i){
                 if(!confirm('删除后属于该站点的评论数据将不可见，请问是否删除？')){

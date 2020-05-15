@@ -5,7 +5,7 @@ $config = [
     ],
     'admin' => [
         'username' => 'root',
-        'password' => '2dfa2f725cecc23403bbec1e401abddb', //md5(user+password)
+        'password' => '2dfa2f725cecc23403bbec1e401abddb', //md5(password+user)
     ],
     'DB' => [
         'host' => '127.0.0.1',

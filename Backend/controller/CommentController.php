@@ -96,6 +96,7 @@ class CommentController extends Controller
                     'requiredUsername' => $requiredUsername,
                     'replyNotify' => $replyNotify,
                     'adminUsername' => $isAdmin?$adminUsername:'',
+                    'adminEmail' => $isAdmin?$adminEmail:'',
                 ],
                 'isAdmin' => $isAdmin,
                 'comment' => [],
