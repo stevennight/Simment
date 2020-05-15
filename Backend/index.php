@@ -2,10 +2,17 @@
 require_once 'config.php';
 require_once 'vendor/autoload.php';
 
-try {
-    ini_set('date.timezone', @CONFIG['global']['timezone']);
-    ini_set('session.cookie_samesite', 'None');
+use \helper\LogHelper;
+
+ini_set('date.timezone', @CONFIG['global']['timezone']);
+ini_set('session.cookie_samesite', 'None');
 //    ini_set('session.cookie_secure', true);
+
+//log记录
+global $logger;
+$logger = new LogHelper(@CONFIG['log']);
+
+try {
     session_start();
 
     $controller = isset($_REQUEST['controller'])?ucfirst($_REQUEST['controller']):null;
@@ -34,4 +41,6 @@ try {
         'code' => -1,
         'msg' => '内部错误'
     ]);
+    $logger->log($exception->getMessage());
+    $logger->log($exception->getTraceAsString(), LogHelper::LEVEL_TRACE);
 }

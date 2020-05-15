@@ -1,6 +1,7 @@
 node_modules/
 vendor/
 /Backend/runtime/cache/*
+/Backend/runtime/log.txt
 /Backend/config.php
 /Backend/public/css/
 /Backend/public/js
