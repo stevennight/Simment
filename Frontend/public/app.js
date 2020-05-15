@@ -335,7 +335,7 @@
         "                <div class=\"total\" v-if=\"commentData.type === 'main'\"><span>{{commentCount}}</span>条评论</div>\n" +
         "                <div class=\"listHistoryBack\" v-if=\"commentData.type !== 'main'\" @click=\"commentHistoryBack\">返回列表</div>\n" +
         "                <div class=\"commentContainer\" v-for=\"(comment, index) in commentList\" :key=\"comment._id['$oid']\">\n" +
-        "                    <div class=\"commentWrapper\" :class=\"commentData.highlight === comment._id['$oid']?'highlight':''\">\n" +
+        "                    <div class=\"commentWrapper\" :class=\"highlightComment(comment)?'highlight':''\">\n" +
         "                        <div class=\"left avatar\">{{comment.username[0]}}</div>\n" +
         "                        <div v-if=\"comment.status === 'public'\" class=\"right\">\n" +
         "                            <div class=\"username\">{{comment.username}}</div>\n" +
@@ -654,8 +654,6 @@ var vm = new Vue({
                         this.commentData.more = data.more;
                     } else {
                         this.commentStack.push(this.commentData);
-
-                        data.highlight = comment._id['$oid'];
                         this.commentData = data;
                     }
                 })
@@ -671,6 +669,10 @@ var vm = new Vue({
         pageChange(page){
             if(page === '...') return;
             this.getList(page);
+        },
+        highlightComment(comment){
+            if(!this.commentData.current) return false;
+            return this.commentData.current._id['$oid'] === comment._id['$oid'];
         }
     },
     mounted() {

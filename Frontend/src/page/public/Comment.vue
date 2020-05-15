@@ -260,8 +260,6 @@
                             this.commentData.more = data.more;
                         } else {
                             this.commentStack.push(this.commentData);
-
-                            data.highlight = comment._id['$oid'];
                             this.commentData = data;
                         }
                     })
