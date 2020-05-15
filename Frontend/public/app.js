@@ -5,7 +5,7 @@
         "    .nyatoriCommentWrapper0511 .send {\n" +
         "        width: 100%;\n" +
         "    }\n" +
-        "    .nyatoriCommentWrapper0511 .send input {\n" +
+        "    .nyatoriCommentWrapper0511 .send input, .nyatoriCommentWrapper0511 .send textarea {\n" +
         "        padding: 0.5rem;\n" +
         "        border-radius: 0.3rem;\n" +
         "        border: 0.1rem solid #ddd;\n" +
@@ -16,7 +16,10 @@
         "    }\n" +
         "    .nyatoriCommentWrapper0511 .send .sendCommentWrapper .sendComment {\n" +
         "        width: 100%;\n" +
+        "        height: 4.8rem;\n" +
         "        display: block;\n" +
+        "        resize: none;\n" +
+        "        padding: .3rem;\n" +
         "    }\n" +
         "    .nyatoriCommentWrapper0511 .send .sendInfo {\n" +
         "        width: 100%;\n" +
@@ -305,7 +308,7 @@
         "                    <div class=\"close\" @click=\"closeReply\">×</div>\n" +
         "                </div>\n" +
         "                <div class=\"sendCommentWrapper\">\n" +
-        "                    <input class=\"sendComment\" v-model=\"comment\" placeholder=\"请输入评论内容\">\n" +
+        "                    <textarea class=\"sendComment\" v-model=\"comment\" placeholder=\"请输入评论内容\"></textarea>\n" +
         "                </div>\n" +
         "                <div class=\"sendInfo\">\n" +
         "                    <div class=\"sendUsernameWrapper\">\n" +
@@ -385,9 +388,10 @@
         "</div>";
 var commentEl = document.getElementById('nyatoriCommentWrapper0511');
 var commentWithStyle = commentEl.getAttribute('data-with-style');
-commentElHtml = (commentWithStyle?nyatoriCommentWrapper0511CSS:'') + nyatoriCommentWrapper0511;
+var commentElHtml = (commentWithStyle?nyatoriCommentWrapper0511CSS:'') + nyatoriCommentWrapper0511;
 commentEl.innerHTML = commentElHtml;
 
+//js部分
 // window.onload = function(){
 var commentEl = document.getElementById('nyatoriCommentWrapper0511');
 var commentSystem = commentEl.getAttribute('data-system');
@@ -539,7 +543,7 @@ var vm = new Vue({
 
                     this.commentData.comment.unshift({
                         _id: {'$oid': (new Date()).getTime()},
-                        comment: this.comment,
+                        comment: data.comment,  //comment从后端返回中获取，因为后端把这个内容处理过。（懒 x_x...）
                         username: '我',
                         date: data.isPublic?'刚刚':'审核后显示',
                         isNew: true,
@@ -587,8 +591,12 @@ var vm = new Vue({
                     this.configRequiredEmail = data.config.requiredEmail;
                     this.configReplyNotify = data.config.replyNotify;
                     this.configAdminUsername = data.config.adminUsername;
+                    this.configAdminEmail = data.config.adminEmail;
                     if(this.configReplyNotify) this.replyNotify = true;
-                    if(data.isAdmin) this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
+                    if(data.isAdmin){
+                        this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
+                        this.email = this.configAdminEmail;  //如果后台已经登录，邮箱显示为管理员邮箱
+                    }
 
                     this.commentData = data;
 

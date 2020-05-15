@@ -18,6 +18,8 @@
             <input type="number" v-model="commentMaxLen">
             管理员用户名：
             <input type="text" v-model="adminUsername">
+            管理员邮箱（通知）：
+            <input type="text" v-model="adminEmail">
             <br />
             <input type="checkbox" v-model="autoCreateArticle">新页面自动创建
             <input type="checkbox" v-model="requiredUsername">用户名必填
@@ -37,6 +39,7 @@
                     <td>回复评论嵌套显示数量</td>
                     <td>评论最大长度</td>
                     <td>管理员用户名</td>
+                    <td>管理员邮箱</td>
                     <td>新页面自动创建</td>
                     <td>用户名必填</td>
                     <td>邮箱必填</td>
@@ -51,6 +54,7 @@
                     <td>{{site.subCommentMainCount}}</td>
                     <td>{{site.commentMaxLen}}</td>
                     <td>{{site.adminUsername}}</td>
+                    <td>{{site.adminEmail}}</td>
                     <td>{{site.autoCreateArticle?'开启':'关闭'}}</td>
                     <td>{{site.requiredUsername?'开启':'关闭'}}</td>
                     <td>{{site.requiredEmail?'开启':'关闭'}}</td>
@@ -81,6 +85,7 @@
                 audit: true,
                 replyNotify: false,
                 adminUsername: 'Admin',
+                adminEmail: '',
                 list: []
             };
         },
@@ -106,7 +111,8 @@
                         audit: this.audit,
                         replyNotify: this.replyNotify,
                         commentMaxLen: this.commentMaxLen,
-                        adminUsername: this.adminUsername
+                        adminUsername: this.adminUsername,
+                        adminEmail: this.adminEmail
                     }
                 })
                     .then((response) => {

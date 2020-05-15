@@ -49,7 +49,8 @@ class CommentController extends Controller
                 'requiredUsername' => 1,
                 'requiredEmail' => 1,
                 'replyNotify' => 1,
-                'adminUsername' => 1
+                'adminUsername' => 1,
+                'adminEmail' => 1
             ]
         ]);
         if(!$siteData){
@@ -65,6 +66,7 @@ class CommentController extends Controller
         $requiredEmail = @$siteData['requiredEmail'];
         $requiredUsername = @$siteData['requiredUsername'];
         $adminUsername = @$siteData['adminUsername'];
+        $adminEmail = @$siteData['adminEmail'];
         $replyNotify = @$siteData['replyNotify'];
         $isAdmin = $this->userLogined()?true:false;
 
@@ -200,6 +202,7 @@ class CommentController extends Controller
                 'requiredUsername' => $requiredUsername,
                 'replyNotify' => $replyNotify,
                 'adminUsername' => $isAdmin?$adminUsername:'',
+                'adminEmail' => $isAdmin?$adminEmail:'',
             ],
             'isAdmin' => $isAdmin,
             'comment' => $data,
@@ -589,11 +592,12 @@ class CommentController extends Controller
         $this->cache->set('submit_rate_' . $userIp, ++$submitTimes, $rateInterval);
 
         //insert comment
+        $comment = $replyStr . $comment;
         $insertResult = $this->db->comment->insertOne([
             'articleId' => $articleId,
             'username' => $username,
             'email' => $email,
-            'comment' => $replyStr . $comment,
+            'comment' => $comment,
             'date' => new MongoDB\BSON\UTCDateTime(microtime(true) * 1000),
             'ip' => $userIp,
             'status' => $auditOn?'audit':'public',
@@ -625,15 +629,13 @@ class CommentController extends Controller
         $res = [
             'code' => 0,
             'msg' => '发布成功',
-            'isPublic' => true
+            'isPublic' => true,
+            'comment' => $comment   //返回提交的评论（被后端处理过）
         ];
         if($auditOn){
             $_SESSION['captcha'] = null;
-            $res = [
-                'code' => 0,
-                'msg' => '提交成功，将于审核后发布',
-                'isPublic' => false
-            ];
+            $res['msg'] = '提交成功，将于审核后发布';
+            $res['isPublic'] = false;
         }
 
         //评论可以直接发布时，邮件通知发送 (需要站点允许replyNotify；被回复者设置了邮箱、允许replyNotify)

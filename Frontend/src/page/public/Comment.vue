@@ -7,7 +7,7 @@
                     <div class="close" @click="closeReply">×</div>
                 </div>
                 <div class="sendCommentWrapper">
-                    <input class="sendComment" v-model="comment" placeholder="请输入评论内容">
+                    <textarea class="sendComment" v-model="comment" placeholder="请输入评论内容"></textarea>
                 </div>
                 <div class="sendInfo">
                     <div class="sendUsernameWrapper">
@@ -148,7 +148,7 @@
 
                         this.commentData.comment.unshift({
                             _id: {'$oid': (new Date()).getTime()},
-                            comment: this.comment,
+                            comment: data.comment,  //comment从后端返回中获取，因为后端把这个内容处理过。（懒 x_x...）
                             username: '我',
                             date: data.isPublic?'刚刚':'审核后显示',
                             isNew: true,
@@ -196,8 +196,12 @@
                         this.configRequiredEmail = data.config.requiredEmail;
                         this.configReplyNotify = data.config.replyNotify;
                         this.configAdminUsername = data.config.adminUsername;
+                        this.configAdminEmail = data.config.adminEmail;
                         if(this.configReplyNotify) this.replyNotify = true;
-                        if(data.isAdmin) this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
+                        if(data.isAdmin){
+                            this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
+                            this.email = this.configAdminEmail;  //如果后台已经登录，邮箱显示为管理员邮箱
+                        }
 
                         this.commentData = data;
                         if(!this.init && this.$route.query.comment !== undefined){
@@ -282,7 +286,7 @@
 <style lang="stylus" scoped>
     .send
         width 100%
-        input
+        input, textarea
             padding .5rem
             border-radius .3rem
             border .1rem solid #ddd
@@ -291,7 +295,10 @@
             margin-top .3rem
             .sendComment
                 width 100%
+                height 4.8rem
                 display block
+                resize none
+                padding .3rem
         .sendInfo
             width 100%
             margin .3rem 0

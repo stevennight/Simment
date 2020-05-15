@@ -56,6 +56,7 @@ class AdminController extends Controller
         $autoCreateArticle = @$params['autoCreateArticle']; //article(path)不存在时是否自动创建，关闭时新页面会禁止评论。
         $subCommentMainCount = @$params['subCommentMainCount'];    //在评论一级列表（非回复评论）页面中，回复评论显示条数 必填
         $adminUsername = @$params['adminUsername'];    //站点管理员用户名，管理员发表评论时会标记为管理员并且使用指定用户名 必填
+        $adminEmail = @$params['adminEmail'];    //站点管理员邮箱
         $perPageCount = @$params['perPageCount'];
         $requiredUsername = @$params['requiredUsername'];
         $requiredEmail = @$params['requiredEmail'];
@@ -110,7 +111,8 @@ class AdminController extends Controller
                 'replyNotify' => $replyNotify,
                 'commentMaxLen' => $commentMaxLen,
                 'subCommentMainCount' => $subCommentMainCount,
-                'adminUsername' => $adminUsername
+                'adminUsername' => $adminUsername,
+                'adminEmail' => $adminEmail
             ]);
             $updateCount = $insertResult->getInsertedCount();
         }else{
@@ -128,7 +130,8 @@ class AdminController extends Controller
                     'replyNotify' => $replyNotify,
                     'commentMaxLen' => $commentMaxLen,
                     'subCommentMainCount' => $subCommentMainCount,
-                    'adminUsername' => $adminUsername
+                    'adminUsername' => $adminUsername,
+                    'adminEmail' => $adminEmail
                 ]
             ]);
             if($updateResult->getMatchedCount() < 1){
