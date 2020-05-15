@@ -277,45 +277,6 @@
         },
         mounted() {
             this.getList();
-
-            // setInterval(() => {
-            //     let postData = {
-            //         "site":"www.nyatori.com",
-            //         "path":"/path1",
-            //         "comment":{
-            //             "comment":"哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
-            //             "username":"1234",
-            //             "email":"1234@qq.com"
-            //         }
-            //     }
-            //     this.axios({
-            //         method: 'POST',
-            //         url: '/api.php?controller=comment&action=submit',
-            //         responseType: 'json',
-            //         data: postData
-            //     })
-            //         .then((response) => {
-            //             if(response.status !== 200){
-            //                 alert('提交失败');
-            //                 return;
-            //             }
-            //             const data = response.data;
-            //             if(data.code === undefined){
-            //                 alert('解析失败');
-            //                 return;
-            //             }
-            //             if(data.code !== 0){
-            //                 alert(data.msg);
-            //                 return;
-            //             }
-            //
-            //             this.comment = this.username = this.email = this.parentId = "";
-            //             this.getList();
-            //         })
-            //         .catch(function (error) {
-            //             console.log(error);
-            //         });
-            // }, 100);
         }
     }
 </script>

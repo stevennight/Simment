@@ -9,7 +9,7 @@
                     <div class="username">{{comment.username}}</div>
                     <div v-if="comment.isAdmin" class="commentAdmin">管理员</div>
                     <div v-if="!comment.isNew" class="reply" @click="replyClick(comment)">回复</div>
-                    <div v-if="commentData.type === 'top_sub'" class="commentDialog" @click="getOne(comment)">查看对话</div>
+                    <div v-if="!comment.isNew && commentData.type === 'top_sub'" class="commentDialog" @click="getOne(comment)">查看对话</div>
                     <div class="commentId">ID:{{comment._id['$oid']}}</div>
                     <div class="date">{{comment.date}}</div>
                     <div style="clear: both"></div>
@@ -155,11 +155,11 @@
             .commentMore
                 background #eee
                 border-radius .3rem
+                user-select none
+                cursor pointer
             .commentWrapper.highlight
                 color darkgoldenrod
                 font-weight bolder
-                user-select none
-                cursor pointer
             .commentWrapper
                 display flex
                 .left

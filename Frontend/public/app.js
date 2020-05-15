@@ -341,7 +341,7 @@
         "                            <div class=\"username\">{{comment.username}}</div>\n" +
         "                            <div v-if=\"comment.isAdmin\" class=\"commentAdmin\">管理员</div>\n" +
         "                            <div v-if=\"!comment.isNew\" class=\"reply\" @click=\"replyClick(comment)\">回复</div>\n" +
-        "                            <div v-if=\"commentData.type === 'top_sub'\" class=\"commentDialog\" @click=\"getOneComment(comment)\">查看对话</div>\n" +
+        "                            <div v-if=\"!comment.isNew && commentData.type === 'top_sub'\" class=\"commentDialog\" @click=\"getOneComment(comment)\">查看对话</div>\n" +
         "                            <div class=\"commentId\">ID:{{comment._id['$oid']}}</div>\n" +
         "                            <div class=\"date\">{{comment.date}}</div>\n" +
         "                            <div style=\"clear: both\"></div>\n" +
