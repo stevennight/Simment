@@ -392,331 +392,336 @@ var commentElHtml = (commentWithStyle?nyatoriCommentWrapper0511CSS:'') + nyatori
 commentEl.innerHTML = commentElHtml;
 
 //js部分
-// window.onload = function(){
-var commentEl = document.getElementById('nyatoriCommentWrapper0511');
-var commentSystem = commentEl.getAttribute('data-system');
-var commentSite = commentEl.getAttribute('data-site');
-var commentScrollEl = commentEl.getAttribute('data-scroll-el');
-// var commentPath = commentEl.getAttribute('data-path');
-var commentPath = GetUrlRelativePath();
-commentPath = decodeURIComponent(commentPath);
-var commentId = getQueryVariable('comment-id');
+window.onload = function(){
+    var commentSystem = commentEl.getAttribute('data-system');
+    var commentSite = commentEl.getAttribute('data-site');
+    var commentScrollEl = commentEl.getAttribute('data-scroll-el');
+    // var commentPath = commentEl.getAttribute('data-path');
+    var commentPath = GetUrlRelativePath();
+    commentPath = decodeURIComponent(commentPath);
+    var commentId = getQueryVariable('comment-id');
 
-var vm = new Vue({
-    el: '#commentApp',
-    data: {
-        captchaImage: commentSystem + "/api.php?controller=public&action=captcha",
-        captchaImageShow: false,
-        replyComment: null,
-        comment: "",
-        username: "",
-        email: "",
-        replyNotify: false,
-        captcha: "",
-        page: 0,
-        commentData: {},
-        commentStack: [],
-        pageList: [],
-        init: false, //判断是否刚加载页面
-        configRequiredUsername: false,
-        configRequiredEmail: false,
-        configReplyNotify: false,
-        configAdminUsername: ''
-    },
-    computed: {
-        commentClosed() {
-            const comment = this.commentData;
-            if(!comment.article) return false;
-            return !comment.article.commentSwitch;
+    var vm = new Vue({
+        el: '#commentApp',
+        data: {
+            captchaImage: null,
+            captchaImageShow: false,
+            replyComment: null,
+            comment: "",
+            username: "",
+            email: "",
+            replyNotify: false,
+            captcha: "",
+            page: 0,
+            commentData: {},
+            commentStack: [],
+            pageList: [],
+            init: false, //判断是否刚加载页面
+            configRequiredUsername: false,
+            configRequiredEmail: false,
+            configReplyNotify: false,
+            configAdminUsername: ''
         },
-        commentList() {
-            if(!this.commentData) return [];
-            return this.commentData.comment;
-        },
-        commentCount(){
-            if(!this.commentData) return 0;
-            if(!this.commentData.article) return 0;
-            return this.commentData.article.commentCount;
-        },
-        pageCount(){
-            if(!this.commentData) return [];
-            if(!this.commentData.article) return [];
-            if(!this.commentData.config) return [];
-            const count = this.commentData.article.commentRootCount;    //使用顶级（根）评论的数量来计算页数，因为只显示一级的评论在列表上。
-            const perPageCount = this.commentData.config.perPageCount; //分页最大评论数
-            const pageTotal = Math.ceil(count / perPageCount);
-            const currentPage = this.commentData.page + 1;
-            if(pageTotal < 1){
-                return [];  //一页时不显示页码
-            } else if(pageTotal < 8) {
-                let pageList = [];
-                for(let i = 1; i <= pageTotal; i++){
-                    pageList[i-1] = i;
-                }
-                return pageList;
-            } else {
-                let pageList = [1, 2];
-                const prePage = currentPage - 1;
-                const nextPage = currentPage + 1;
-                if(prePage > 2){
-                    pageList.push('...');
-                    pageList.push(prePage);
-                }
-                if(currentPage > 2 && currentPage < pageTotal-1){
-                    pageList.push(currentPage);
-                }
-                if(nextPage > 2 && nextPage < pageTotal-1){
-                    pageList.push(nextPage);
-                    pageList.push('...');
-                }
-                if(nextPage <= 2){
-                    pageList.push('...');
-                }
-                pageList.push(pageTotal - 1, pageTotal);
-                return pageList;
-            }
-        }
-    },
-    methods: {
-        submit() {
-            let isAdmin = this.commentData.isAdmin;
-
-            if(!isAdmin && this.captcha.trim().length < 1) {
-                alert('请输入验证码');
-                return false;
-            }
-            if(this.comment.length > 200) {
-                alert('评论内容过长');
-                return false;
-            }
-            if(this.comment.trim().length < 1){
-                alert('请输入评论内容');
-                return false;
-            }
-            if(!isAdmin && this.configRequiredUsername && this.username.trim().length < 1){
-                alert('请输入用户名');
-                return false;
-            }
-            if(!isAdmin && this.configRequiredEmail && this.email.trim().length < 1){
-                alert('请输入邮箱');
-                return false;
-            }
-            if(this.email && !/^\w+?@\w+?\.\w+?$/g.test(this.email)){
-                alert('输入邮箱有误');
-                return false;
-            }
-            let postData = {
-                site: commentSite,
-                path: commentPath,
-                comment: {
-                    comment: this.comment,
-                    username: this.username,
-                    email: this.email
-                },
-                replyNotify: this.replyNotify,
-                captcha: this.captcha
-            };
-            if(this.replyComment && this.replyComment._id && this.replyComment._id['$oid']){
-                postData.comment.parentId = this.replyComment._id['$oid'];
-            }
-            $jquery.ajax({
-                method: 'POST',
-                url: commentSystem + '/api.php?controller=comment&action=submit&site=' + commentSite,
-                data: JSON.stringify(postData),
-                dataType: 'json',
-                contentType: "application/json",
-                xhrFields: {
-                    withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-                },
-            })
-                .then((response) => {
-                    const data = response;
-                    if(data.code === undefined){
-                        alert('解析失败');
-                        return;
+        computed: {
+            commentClosed() {
+                const comment = this.commentData;
+                if(!comment.article) return false;
+                return !comment.article.commentSwitch;
+            },
+            commentList() {
+                if(!this.commentData) return [];
+                return this.commentData.comment;
+            },
+            commentCount(){
+                if(!this.commentData) return 0;
+                if(!this.commentData.article) return 0;
+                return this.commentData.article.commentCount;
+            },
+            pageCount(){
+                if(!this.commentData) return [];
+                if(!this.commentData.article) return [];
+                if(!this.commentData.config) return [];
+                const count = this.commentData.article.commentRootCount;    //使用顶级（根）评论的数量来计算页数，因为只显示一级的评论在列表上。
+                const perPageCount = this.commentData.config.perPageCount; //分页最大评论数
+                const pageTotal = Math.ceil(count / perPageCount);
+                const currentPage = this.commentData.page + 1;
+                if(pageTotal < 1){
+                    return [];  //一页时不显示页码
+                } else if(pageTotal < 8) {
+                    let pageList = [];
+                    for(let i = 1; i <= pageTotal; i++){
+                        pageList[i-1] = i;
                     }
-                    this.refreshCaptcha();
-                    if(data.code !== 0){
+                    return pageList;
+                } else {
+                    let pageList = [1, 2];
+                    const prePage = currentPage - 1;
+                    const nextPage = currentPage + 1;
+                    if(prePage > 2){
+                        pageList.push('...');
+                        pageList.push(prePage);
+                    }
+                    if(currentPage > 2 && currentPage < pageTotal-1){
+                        pageList.push(currentPage);
+                    }
+                    if(nextPage > 2 && nextPage < pageTotal-1){
+                        pageList.push(nextPage);
+                        pageList.push('...');
+                    }
+                    if(nextPage <= 2){
+                        pageList.push('...');
+                    }
+                    pageList.push(pageTotal - 1, pageTotal);
+                    return pageList;
+                }
+            }
+        },
+        methods: {
+            submit() {
+                let isAdmin = this.commentData.isAdmin;
+
+                if(!isAdmin && this.captcha.trim().length < 1) {
+                    alert('请输入验证码');
+                    return false;
+                }
+                if(this.comment.length > 200) {
+                    alert('评论内容过长');
+                    return false;
+                }
+                if(this.comment.trim().length < 1){
+                    alert('请输入评论内容');
+                    return false;
+                }
+                if(!isAdmin && this.configRequiredUsername && this.username.trim().length < 1){
+                    alert('请输入用户名');
+                    return false;
+                }
+                if(!isAdmin && this.configRequiredEmail && this.email.trim().length < 1){
+                    alert('请输入邮箱');
+                    return false;
+                }
+                if(this.email && !/^\w+?@\w+?\.\w+?$/g.test(this.email)){
+                    alert('输入邮箱有误');
+                    return false;
+                }
+                let postData = {
+                    site: commentSite,
+                    path: commentPath,
+                    comment: {
+                        comment: this.comment,
+                        username: this.username,
+                        email: this.email
+                    },
+                    replyNotify: this.replyNotify,
+                    captcha: this.captcha
+                };
+                if(this.replyComment && this.replyComment._id && this.replyComment._id['$oid']){
+                    postData.comment.parentId = this.replyComment._id['$oid'];
+                }
+                $jquery.ajax({
+                    method: 'POST',
+                    url: commentSystem + '/api.php?controller=comment&action=submit&site=' + commentSite,
+                    data: JSON.stringify(postData),
+                    dataType: 'json',
+                    contentType: "application/json",
+                    xhrFields: {
+                        withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
+                    },
+                })
+                    .then((response) => {
+                        const data = response;
+                        if(data.code === undefined){
+                            alert('解析失败');
+                            return;
+                        }
+                        this.refreshCaptcha();
+                        if(data.code !== 0){
+                            alert(data.msg);
+                            return;
+                        }
+
+                        this.commentData.comment.unshift({
+                            _id: {'$oid': (new Date()).getTime()},
+                            comment: data.comment,  //comment从后端返回中获取，因为后端把这个内容处理过。（懒 x_x...）
+                            username: '我',
+                            date: data.isPublic?'刚刚':'审核后显示',
+                            isNew: true,
+                            status: 'public'
+                        });
+
+                        this.comment = this.username = this.email = this.captcha = "";
+                        this.replyComment = null;
+                        if(this.commentData.isAdmin){
+                            this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
+                            this.email = this.configAdminEmail;  //如果后台已经登录，邮箱显示为管理员邮箱
+                        }
                         alert(data.msg);
-                        return;
-                    }
-
-                    this.commentData.comment.unshift({
-                        _id: {'$oid': (new Date()).getTime()},
-                        comment: data.comment,  //comment从后端返回中获取，因为后端把这个内容处理过。（懒 x_x...）
-                        username: '我',
-                        date: data.isPublic?'刚刚':'审核后显示',
-                        isNew: true,
-                        status: 'public'
+                        // this.getList();
+                    })
+                    .catch(function (error) {
+                        console.log(error);
                     });
-
-                    this.comment = this.username = this.email = this.captcha = "";
-                    this.replyComment = null;
-                    if(this.commentData.isAdmin){
-                        this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
-                        this.email = this.configAdminEmail;  //如果后台已经登录，邮箱显示为管理员邮箱
-                    }
-                    alert(data.msg);
-                    // this.getList();
+            },
+            getList(page = 1) {
+                $jquery.ajax({
+                    method: 'get',
+                    url: commentSystem + "/api.php",
+                    data: {
+                        controller: 'comment',
+                        action: 'list',
+                        site: commentSite,
+                        path: commentPath,
+                        page: (page - 1)
+                    },
+                    dataType: "json",
+                    xhrFields: {
+                        withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
+                    },
                 })
-                .catch(function (error) {
-                    console.log(error);
-                });
-        },
-        getList(page = 1) {
-            $jquery.ajax({
-                method: 'get',
-                url: commentSystem + "/api.php",
-                data: {
-                    controller: 'comment',
-                    action: 'list',
-                    site: commentSite,
-                    path: commentPath,
-                    page: (page - 1)
-                },
-                dataType: "json",
-                xhrFields: {
-                    withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-                },
-            })
-                .then((response) => {
-                    var data = response;
-                    if(data.code === undefined){
-                        alert('解析失败');
-                        return;
-                    }
-                    if(data.code !== 0){
-                        alert(data.msg);
-                        return;
-                    }
+                    .then((response) => {
+                        var data = response;
+                        if(data.code === undefined){
+                            alert('解析失败');
+                            return;
+                        }
+                        if(data.code !== 0){
+                            alert(data.msg);
+                            return;
+                        }
 
-                    this.configRequiredUsername = data.config.requiredUsername;
-                    this.configRequiredEmail = data.config.requiredEmail;
-                    this.configReplyNotify = data.config.replyNotify;
-                    this.configAdminUsername = data.config.adminUsername;
-                    this.configAdminEmail = data.config.adminEmail;
-                    if(this.configReplyNotify) this.replyNotify = true;
-                    if(data.isAdmin){
-                        this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
-                        this.email = this.configAdminEmail;  //如果后台已经登录，邮箱显示为管理员邮箱
-                    }
+                        this.configRequiredUsername = data.config.requiredUsername;
+                        this.configRequiredEmail = data.config.requiredEmail;
+                        this.configReplyNotify = data.config.replyNotify;
+                        this.configAdminUsername = data.config.adminUsername;
+                        this.configAdminEmail = data.config.adminEmail;
+                        if(this.configReplyNotify) this.replyNotify = true;
+                        if(data.isAdmin){
+                            this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
+                            this.email = this.configAdminEmail;  //如果后台已经登录，邮箱显示为管理员邮箱
+                        }
 
-                    this.commentData = data;
-
-                    if(!this.init && commentId !== false){
-                        this.getOneComment({_id: {'$oid': commentId}});
-                        setTimeout(() => {
-                            $jquery(commentScrollEl).scrollTop($jquery("#nyatoriCommentWrapper0511").offset().top); //移动到评论区处。
-                        }, 3000);   //暂时写死给定一个延迟。
-                    }
-
-                    this.init = true;
-                })
-                .catch(function(error){
-                    console.log(error);
-                });
-        },
-        refreshCaptcha(){
-            this.captchaImage = commentSystem + "/api.php?controller=public&action=captcha&token="+Math.random();
-            this.captchaImageShow = false;
-        },
-        captchaLoaded(){
-            this.captchaImageShow = true;
-        },
-        replyClick(comment){
-            this.replyComment = comment;
-            console.log(comment);
-        },
-        closeReply(){
-            this.replyComment = null;
-        },
-        getOneComment(comment, getMore = null){
-            if(getMore){
-                getMore = this.commentData.more['$oid']
-            }
-            $jquery.ajax({
-                url: commentSystem + "/api.php",
-                data: {
-                    controller: 'comment',
-                    action: 'listone',
-                    id: comment._id['$oid'],
-                    more: getMore,
-                    site: commentSite,
-                    path: commentPath,
-                },
-                dataType: 'json',
-                xhrFields: {
-                    withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
-                },
-            })
-                .then((response) => {
-                    const data = response;
-                    if(data.code === undefined){
-                        alert('解析失败');
-                        return;
-                    }
-                    if(data.code !== 0){
-                        alert(data.msg);
-                        return;
-                    }
-
-                    if(getMore){
-                        this.commentData.comment = this.commentData.comment.concat(data.comment);
-                        this.commentData.more = data.more;
-                    } else {
-                        this.commentStack.push(this.commentData);
                         this.commentData = data;
-                    }
+
+                        if(!this.init && commentId !== false){
+                            this.getOneComment({_id: {'$oid': commentId}}, null, {scroll: true});
+                        }
+
+                        this.init = true;
+                    })
+                    .catch(function(error){
+                        console.log(error);
+                    });
+            },
+            refreshCaptcha(){
+                this.captchaImage = commentSystem + "/api.php?controller=public&action=captcha&token="+Math.random();
+                this.captchaImageShow = false;
+            },
+            captchaLoaded(){
+                this.captchaImageShow = true;
+            },
+            replyClick(comment){
+                this.replyComment = comment;
+                console.log(comment);
+            },
+            closeReply(){
+                this.replyComment = null;
+            },
+            /**
+             * @param comment 评论object
+             * @param getMore 分页所在评论id，获取指定评论下更多子评论或上级评论。
+             * @param options 可选项，scroll: true在获取成功后将页面滚动到评论区。
+             */
+            getOneComment(comment, getMore = null, options = {}){
+                if(getMore){
+                    getMore = this.commentData.more['$oid']
+                }
+                $jquery.ajax({
+                    url: commentSystem + "/api.php",
+                    data: {
+                        controller: 'comment',
+                        action: 'listone',
+                        id: comment._id['$oid'],
+                        more: getMore,
+                        site: commentSite,
+                        path: commentPath,
+                    },
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true //默认情况下，标准的跨域请求是不会发送cookie的
+                    },
                 })
-                .catch(function(error){
-                    console.log(error);
-                });
+                    .then((response) => {
+                        const data = response;
+                        if(data.code === undefined){
+                            alert('解析失败');
+                            return;
+                        }
+                        if(data.code !== 0){
+                            alert(data.msg);
+                            return;
+                        }
+
+                        if(getMore){
+                            this.commentData.comment = this.commentData.comment.concat(data.comment);
+                            this.commentData.more = data.more;
+                        } else {
+                            this.commentStack.push(this.commentData);
+                            this.commentData = data;
+                        }
+
+                        if(options.scroll)
+                            $jquery(commentScrollEl).scrollTop($jquery("#nyatoriCommentWrapper0511").offset().top); //移动到评论区处。主要是访问页面时指定了评论Id时滚动到评论区让用户看评论（如查看回复自己的评论）
+                    })
+                    .catch(function(error){
+                        console.log(error);
+                    });
+            },
+            commentHistoryBack() {
+                const commentList = this.commentStack.pop();
+                if(!commentList) return;
+                this.commentData = commentList;
+            },
+            pageChange(page){
+                if(page === '...') return;
+                this.getList(page);
+            },
+            highlightComment(comment){
+                if(!this.commentData.current) return false;
+                return this.commentData.current._id['$oid'] === comment._id['$oid'];
+            }
         },
-        commentHistoryBack() {
-            const commentList = this.commentStack.pop();
-            if(!commentList) return;
-            this.commentData = commentList;
-        },
-        pageChange(page){
-            if(page === '...') return;
-            this.getList(page);
-        },
-        highlightComment(comment){
-            if(!this.commentData.current) return false;
-            return this.commentData.current._id['$oid'] === comment._id['$oid'];
+        mounted() {
+            this.$el.style.display = 'block';   //避免闪现上面vue代码的未解析的文本。
+            this.captchaImage = commentSystem + "/api.php?controller=public&action=captcha";
+            this.getList();
         }
-    },
-    mounted() {
-        this.$el.style.display = 'block';   //避免闪现上面vue代码的未解析的文本。
-        this.getList();
-    }
-}); //会去除锚点，如果使用vue router等类似单页应用可能会出现问题。
+    }); //会去除锚点，如果使用vue router等类似单页应用可能会出现问题。
 
-function GetUrlRelativePath()
-{
-    var url = document.location.toString();
-    var arrUrl = url.split("//");
+    function GetUrlRelativePath()
+    {
+        var url = document.location.toString();
+        var arrUrl = url.split("//");
 
-    var start = arrUrl[1].indexOf("/");
-    var relUrl = arrUrl[1].substring(start);//stop省略，截取从start开始到结尾的所有字符
+        var start = arrUrl[1].indexOf("/");
+        var relUrl = arrUrl[1].substring(start);//stop省略，截取从start开始到结尾的所有字符
 
-    if(relUrl.indexOf("#") != -1){  //去除锚点
-        relUrl = relUrl.split("#")[0];
+        if(relUrl.indexOf("#") != -1){  //去除锚点
+            relUrl = relUrl.split("#")[0];
+        }
+        if(relUrl.indexOf("?") != -1){
+            relUrl = relUrl.split("?")[0];
+        }
+        return relUrl;
     }
-    if(relUrl.indexOf("?") != -1){
-        relUrl = relUrl.split("?")[0];
+
+    function getQueryVariable(variable)
+    {
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+        }
+        return false;
     }
-    return relUrl;
 }
-
-function getQueryVariable(variable)
-{
-    var query = window.location.search.substring(1);
-    var vars = query.split("&");
-    for (var i=0;i<vars.length;i++) {
-        var pair = vars[i].split("=");
-        if(pair[0] == variable){return pair[1];}
-    }
-    return false;
-}
-// }

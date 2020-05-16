@@ -600,10 +600,7 @@
                         this.commentData = data;
 
                         if(!this.init && commentId !== false){
-                            this.getOneComment({_id: {'$oid': commentId}});
-                            setTimeout(() => {
-                                $jquery(commentScrollEl).scrollTop($jquery("#nyatoriCommentWrapper0511").offset().top); //移动到评论区处。
-                            }, 3000);   //暂时写死给定一个延迟。
+                            this.getOneComment({_id: {'$oid': commentId}}, null, {scroll: true});
                         }
 
                         this.init = true;
@@ -626,7 +623,12 @@
             closeReply(){
                 this.replyComment = null;
             },
-            getOneComment(comment, getMore = null){
+            /**
+             * @param comment 评论object
+             * @param getMore 分页所在评论id，获取指定评论下更多子评论或上级评论。
+             * @param options 可选项，scroll: true在获取成功后将页面滚动到评论区。
+             */
+            getOneComment(comment, getMore = null, options = {}){
                 if(getMore){
                     getMore = this.commentData.more['$oid']
                 }
@@ -663,6 +665,9 @@
                             this.commentStack.push(this.commentData);
                             this.commentData = data;
                         }
+
+                        if(options.scroll)
+                            $jquery(commentScrollEl).scrollTop($jquery("#nyatoriCommentWrapper0511").offset().top); //移动到评论区处。主要是访问页面时指定了评论Id时滚动到评论区让用户看评论（如查看回复自己的评论）
                     })
                     .catch(function(error){
                         console.log(error);
