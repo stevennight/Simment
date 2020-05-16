@@ -548,7 +548,10 @@
 
                         this.comment = this.username = this.email = this.captcha = "";
                         this.replyComment = null;
-                        if(this.commentData.isAdmin) this.username = this.configAdminUsername;
+                        if(this.commentData.isAdmin){
+                            this.username = this.configAdminUsername;  //如果后台已经登录，显示用户名为管理员
+                            this.email = this.configAdminEmail;  //如果后台已经登录，邮箱显示为管理员邮箱
+                        }
                         alert(data.msg);
                         // this.getList();
                     })
