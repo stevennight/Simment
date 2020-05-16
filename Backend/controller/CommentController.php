@@ -398,7 +398,8 @@ class CommentController extends Controller
      */
     public function submitAction(){
         $userIp = IpHelper::getUserIp();
-        $submitTimes = $this->cache->get('submit_rate_' . $userIp)?:0; //发送次数
+        $cacheKey = 'submit_rate_' . StringHelper::cacheKeyFilter($userIp); //IPV6下的:作为key是非法的。
+        $submitTimes = $this->cache->get($cacheKey)?:0; //发送次数
         $rateInterval = 10;     //rateInterval秒内只允许发送rateTimeLimit次。
         $rateTimeLimit = 1;
         if(isset($submitTimes) && $submitTimes >= $rateTimeLimit){
@@ -589,8 +590,8 @@ class CommentController extends Controller
             }
         }
 
-        $submitTimes = $this->cache->get('submit_rate_' . $userIp); //发送次数，重新获取，减少脏数据写入概率。
-        $this->cache->set('submit_rate_' . $userIp, ++$submitTimes, $rateInterval);
+        $submitTimes = $this->cache->get($cacheKey); //发送次数，重新获取，减少脏数据写入概率。
+        $this->cache->set($cacheKey, ++$submitTimes, $rateInterval);
 
         //insert comment
         $comment = $replyStr . $comment;

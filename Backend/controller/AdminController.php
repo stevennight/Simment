@@ -880,7 +880,8 @@ class AdminController extends Controller
      */
     public function loginAction(){
         $userIp = IpHelper::getUserIp();
-        $tryTimes = $this->cache->get('login_rate_' . $userIp)?:0; //尝试登录次数
+        $cacheKey = 'login_rate_' . StringHelper::cacheKeyFilter($userIp);
+        $tryTimes = $this->cache->get($cacheKey)?:0; //尝试登录次数
         $rateInterval = 86400;     //rateInterval秒内只允许尝试rateTimeLimit次登录。
         $rateTimeLimit = 3;
         if(isset($tryTimes) && $tryTimes >= $rateTimeLimit){
@@ -930,8 +931,8 @@ class AdminController extends Controller
         }
         if($username !== CONFIG['admin']['username'] || md5($password . $username) != CONFIG['admin']['password']){
             //尝试计数增加
-            $tryTimes = $this->cache->get('login_rate_' . $userIp); //尝试次数，重新获取，减少脏数据写入概率。
-            $this->cache->set('login_rate_' . $userIp, ++$tryTimes, $rateInterval);
+            $tryTimes = $this->cache->get($cacheKey); //尝试次数，重新获取，减少脏数据写入概率。
+            $this->cache->set($cacheKey, ++$tryTimes, $rateInterval);
 
             $_SESSION['captcha'] = null;
             $this->response([
@@ -942,7 +943,7 @@ class AdminController extends Controller
         }
 
         //登录成功删除计数
-        $this->cache->delete('login_rate_' . $userIp);
+        $this->cache->delete($cacheKey);
 
         $_SESSION['user'] = $username;
         $this->response([

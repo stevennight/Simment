@@ -21,6 +21,10 @@ class StringHelper {
         return $str;
     }
 
+    public static function cacheKeyFilter($str){
+        return preg_replace('/[^0-9a-zA-Z_]/', '_', $str);
+    }
+
     public static function emailNotifySubject($siteName){
         return '['.$siteName.']有人回复了您的评论';
     }
