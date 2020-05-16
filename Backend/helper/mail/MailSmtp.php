@@ -7,6 +7,7 @@ class MailSmtp
 {
     private $mailer = null;
     private $username = null;
+    private $from = null;
     private $senderAlias = null;
 
     public function __construct($config){
@@ -16,6 +17,8 @@ class MailSmtp
         if(empty($port)) throw new \Exception('Nedd Smtp Server Port');
         $this->username = $username = @$config['username'];
         if(empty($username)) throw new \Exception('Nedd Username');
+        $this->from = $from = @$config['from'];
+        if(empty($from)) throw new \Exception('Nedd From');
         $password = @$config['password'];
         if(empty($password)) throw new \Exception('Nedd Password');
         $secure = @$config['secure'];
@@ -38,7 +41,7 @@ class MailSmtp
 
     public function send($receiver, $subject, $content, $contentType = 'text') {
         $mail = new Message;
-        $mail->setFrom($this->senderAlias . ' <' . $this->username . '>')
+        $mail->setFrom($this->senderAlias . ' <' . $this->from . '>')
             ->addTo($receiver)
             ->setSubject($subject);
 

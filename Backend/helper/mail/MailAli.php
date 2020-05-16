@@ -4,6 +4,8 @@
 namespace helper\mail;
 
 
+use helper\LogHelper;
+
 class MailAli
 {
     const SERVERS = [
@@ -102,6 +104,7 @@ class MailAli
 
         $return = $this->geturl('https://'.$this->server.'/?'.$paramsStr);
         if(isset($return['Code'])){
+            $GLOBALS['logger']->log('ali direct mail:' . $return['Code'] . '-' . $return['Message'], LogHelper::LEVEL_ERROR);
             return false;
         }
         return true;
