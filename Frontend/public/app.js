@@ -365,7 +365,7 @@
         "                                <div class=\"subCommentId\">ID:{{subComment._id['$oid']}}</div>\n" +
         "                                <div class=\"subCommentDate\">{{subComment.date}}</div>\n" +
         "                                <div style=\"clear: both\"></div>\n" +
-        "                                <div class=\"subCommentComment\">{{subComment.comment}}</div>\n" +
+        "                                <div class=\"subCommentComment\"><span v-html=\"subComment.comment\"></span></div>\n" +
         "                                <div hidden>{{subIndex}}</div>\n" +
         "                            </div>\n" +
         "                        </div>\n" +
