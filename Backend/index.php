@@ -5,7 +5,8 @@ require_once 'vendor/autoload.php';
 use \helper\LogHelper;
 
 ini_set('date.timezone', @CONFIG['global']['timezone']);
-ini_set('session.cookie_samesite', 'None');
+ini_set('session.name', '__simment');
+ini_set('session.cookie_samesite', 'None'); //部分浏览器可能无法支持，目前遇到9、10大版本的移动端小米浏览器无法支持，导致直接不设置cookies。
 if(\helper\EnvHelper::isHttps()){
     //建议使用https, cookies_samesite None的设置下如果非https（secure为false)，目前chrome会提示警告⚠️
     ini_set('session.cookie_secure', true);
