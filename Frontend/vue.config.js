@@ -1,4 +1,6 @@
 const path = require('path');
+const UglifyJS = require('uglify-es');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   devServer:{
@@ -10,4 +12,17 @@ module.exports = {
       },
     },
   },
+  configureWebpack: config => {
+    config.plugins.push(
+        new CopyWebpackPlugin([
+          {
+            from: path.join(__dirname, 'src/assets/js'),
+            to: 'js',
+            transform: function (content) {
+              return UglifyJS.minify(content.toString()).code;
+            }
+          }
+        ])
+    );
+  }
 };

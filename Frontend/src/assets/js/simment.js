@@ -404,7 +404,7 @@ window.onload = function(){
     var vm = new Vue({
         el: '#commentApp',
         data: {
-            captchaImage: null,
+            captchaImage: commentSystem + "/api.php?controller=public&action=captcha",
             captchaImageShow: false,
             replyComment: null,
             comment: "",
@@ -692,7 +692,6 @@ window.onload = function(){
         },
         mounted() {
             this.$el.style.display = 'block';   //避免闪现上面vue代码的未解析的文本。
-            this.captchaImage = commentSystem + "/api.php?controller=public&action=captcha";
             this.getList();
         }
     }); //会去除锚点，如果使用vue router等类似单页应用可能会出现问题。
@@ -720,7 +719,7 @@ window.onload = function(){
         var vars = query.split("&");
         for (var i=0;i<vars.length;i++) {
             var pair = vars[i].split("=");
-            if(pair[0] == variable){return pair[1];}
+            if(pair[0] == variable && pair[1].trim() !== ''){return pair[1];}  //值为空时不返回参数，当作没设置。
         }
         return false;
     }
