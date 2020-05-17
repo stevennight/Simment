@@ -17,7 +17,7 @@ $config = [
         'db' => 'comment',
     ],
     'cache' => [
-        'fileDir' => __DIR__ . '/runtime/cache',
+        'fileDir' => __DIR__ . '/runtime/cache',    //请先创建目录
         'partCleanCount' => 5,  //缓存文件部分清理时尝试清理的次数
         'cron' => true  //使用cron，请在crontab中定时运行根目录的cron.php
     ],
@@ -26,7 +26,8 @@ $config = [
         'server' => 'smtp.example.com',
         'port' => '465',
         'username' => 'test',
-        'senderAlias' => 'test',
+        'from' => 'test@test.com',
+        'senderAlias' => 'test',    //邮件发送者的名字格式为 => alias <from>
         'password' => 'password',
         'secure' => 'ssl',
         'timeout' => 20,
@@ -42,6 +43,10 @@ $config = [
 //        'accessKeySecret' => 'Aliyun AccessKey Secret'    //主账号或者ram的AccessKey Secret
 
 //        'type' => 'disable',    //全局关闭
+    ],
+    'log' => [
+        'switch' => true,
+        'file' => __DIR__ . '/runtime/log.txt',
     ],
 ];
 !defined('CONFIG')?define('CONFIG', $config):null;
