@@ -38,7 +38,15 @@
   <!--若您的网页未引入vue，请务必通过以下语句引入-->
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
   <div id="nyatoriCommentWrapper0511" data-system="<评论系统地址，协议(http://或https://)+域名，末尾无'/'>" data-site="<要引入评论系统站点的域名>" data-path="<目前请留空>" data-with-style="<是否使用评论系统自带的style，使用请填写true，否则留空并且需要在自己的站点中给评论区块设置样式>" data-scroll-el="<滚动条所属元素，可以是标签名，#id或者.class等（JQ选择器）>"></div>
-  <script src="<评论系统地址，同data-system>/js/simment.js"></script>
+  <!-- 页面加载完再异步引入simment.js -->
+  <script>
+        (function() {
+          var smjs = document.createElement("script");
+          smjs.src = "<评论系统地址，同data-system>/js/simment.js";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(smjs, s);
+        })();
+  </script>
   ```
 
 #### 注意
