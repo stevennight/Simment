@@ -1,9 +1,13 @@
 <?php
 $config = [
     'global' => [
-        'timezone' => 'Asia/Shanghai'
+        'timezone' => 'Asia/Shanghai',
+        'cookieDomain' => '.nyatori.com',   //设置cookie时设置的domain，可留空则默认为当前域名。
+        'cookieCors' => true, //默认开启，设置session的samesite=none。否则未来可能无法在外部站点携带评论系统的cookie进行请求。正确设置cookieDomain时可避免跨域带cookie请求时可以设置为false。
+        'cors' => true  //默认开启，除非满足评论系统和站点在同域名非跨域情况下可以设置为false。
     ],
     'admin' => [
+        //默认后台账号密码为root, 123456。上线请务必修改默认账号密码。
         'username' => 'root',
         'password' => '2dfa2f725cecc23403bbec1e401abddb', //md5(password+user)
     ],

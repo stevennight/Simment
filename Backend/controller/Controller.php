@@ -62,4 +62,38 @@ class Controller
     public function userLogined(){
         return @$_SESSION['user'];
     }
+
+    public function setHeader(){
+        $site = @$_GET['site']; //请求时需要在get(url param)中放入site参数，包括submit等POST请求action。
+        $origin = @$_SERVER['HTTP_REFERER'];
+
+        if(!$origin) return true;   //直接访问，暂时定为可以访问。
+
+        if(@CONFIG['global']['cors']){
+            header("Access-Control-Allow-Credentials: true");   //允许带cookies
+            header("Access-Control-Allow-Methods: GET, POST, OPTIONS");   //允许methods
+            //has been blocked by CORS policy: Request header field content-type is not allowed by Access-Control-Allow-Headers in preflight response. ↓
+            header("Access-Control-Allow-Headers: DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization");   //允许header
+            //跨域origin
+            if(!preg_match('/^((https|http):\/\/(.*?))+?(\/|$)/', $origin, $matches)){
+                //referer不合法
+                return false;
+            }
+            header("Access-Control-Allow-Origin: " . $matches[1]);
+        }else{
+            preg_match('/^((https|http):\/\/(.*?))+?(\/|$)/', $origin, $matches);
+        }
+
+        //来源地址是当前服务器地址时，
+        $serverName = explode(':', $matches[3]);
+        $server = $_SERVER['SERVER_NAME'];
+        if(!in_array($_SERVER['SERVER_PORT'], [80, 443])){
+            $server .= $_SERVER['SERVER_PORT']; //非80，443则加上端口。不强制区分http, https，因为如果使用CDN，客户端访问和回源有可能不在同一个端口（协议）。其它特殊情况暂不考虑。
+        }
+        //来源地址非当前服务器地址，并且不是指定的site地址时，返回false。
+        if($matches[3] !== $site && $serverName[0] !== $server){
+            return false;
+        }
+        return true;
+    }
 }
