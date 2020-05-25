@@ -55,3 +55,7 @@
 - 评论系统可能在部分浏览器上无法正常使用，请通过Issue告知浏览器的名称，版本，以及使用的Simment版本。（目前已知移动端小米浏览器9和10都出现samesite=none的session cookie无法保存的问题，如果有好的解决办法希望可以通过Issue告知或者直接pull request，感谢）
 - 如果可以合理设置cookies domain（config.php），则可以关闭cookieCors（config.php），并且可以避免以上两点问题。如评论系统为comment.nyatori.com，站点为nyatori.com，则cookies domain可以设置为`.nyatori.com`。
 - 服务器中请关闭或者配置好php的open_basedir设置，否则可能导致php无法访问的问题。（如宝塔面板可以关闭open_basedir）
+
+#### Official
+
+https://www.nyatori.com/2020/05/25/IT/Program/simment/
